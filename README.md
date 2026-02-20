@@ -1,7 +1,7 @@
 # Browse The Web (BTW) 
 
 [![npm version](https://badge.fury.io/js/browse-the-web.svg)](https://www.npmjs.com/package/browse-the-web)
-[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![Playwright](https://img.shields.io/badge/Playwright-1.58+-green.svg)](https://playwright.dev/)
@@ -211,7 +211,7 @@ curl http://localhost:3000/api/health
 
 ## 📝 License
 
-ISC
+MIT
 
 ## 🤝 Contributing
 

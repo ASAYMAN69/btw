@@ -70,7 +70,7 @@
     "bot-automation"
   ],
   "author": "AS Ayman",
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "cors": "^2.8.6",

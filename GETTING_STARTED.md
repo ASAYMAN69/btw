@@ -555,7 +555,7 @@ A: Currently, BTW supports one browser instance at a time (singleton pattern). M
 A: BTW doesn't solve CAPTCHAs automatically. You'll need to handle them manually or use third-party services.
 
 **Q: Is BTW free to use?**  
-A: Yes! BTW is open-source and free under the ISC license.
+A: Yes! BTW is open-source and free under the MIT license.
 
 **Q: Can I run BTW in production?**  
 A: Yes! Just run in headless mode and implement proper security measures.
