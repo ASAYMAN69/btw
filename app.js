@@ -27,9 +27,16 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   process.title = "BTW-Browser-API";
   console.log(`BTW (Browse The Web) - API Server running on http://localhost:${PORT}`);
+
+  try {
+    await browserManager.ensureBrowser();
+    console.log('Browser auto-launched and ready');
+  } catch (error) {
+    console.error('Failed to auto-launch browser:', error.message);
+  }
 });
 
 module.exports = { app, browserManager, tabManager };

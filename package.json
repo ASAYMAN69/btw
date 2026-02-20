@@ -1,14 +1,29 @@
 {
   "name": "browse-the-web",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Browse The Web (BTW) - AI Browser Automation API - Control browser via HTTP endpoints",
-  "main": "app.js",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "node app.js",
-    "dev": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/index.js",
+    "start:old": "node app.js",
+    "dev": "ts-node src/index.ts",
+    "build": "npx tsc",
+    "build:watch": "npx tsc --watch",
+    "test": "node dist/test/index.js",
+    "test:basic": "curl -s http://localhost:3000/api/health && echo",
+    "clean": "rm -rf dist",
+    "all": "npm run clean && npm run build && npm start"
   },
-  "keywords": ["browser", "automation", "playwright", "api", "ai", "btw", "browse-the-web"],
+  "keywords": [
+    "browser",
+    "automation",
+    "playwright",
+    "api",
+    "ai",
+    "btw",
+    "browse-the-web",
+    "typescript"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
@@ -17,5 +32,13 @@
     "express": "^5.2.1",
     "playwright": "^1.58.2",
     "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.19.11",
+    "@types/uuid": "^10.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

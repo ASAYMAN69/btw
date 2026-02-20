@@ -598,7 +598,7 @@ Right click an element (context menu).
 ## Screenshot & PDF
 
 ### POST /api/tabs/:tabId/screenshot
-Take a screenshot of the page or element.
+Take a screenshot of the current page.
 
 **Request:**
 ```json
@@ -612,9 +612,11 @@ Take a screenshot of the page or element.
 **Response:**
 ```json
 {
-  "data": "base64-encoded-image-data",
-  "type": "png",
-  "fullPage": false
+  "success": true,
+  "filePath": "/home/username/btw_media/screenshot_1771615728077_ff22jq.png",
+  "fileName": "screenshot_1771615728077_ff22jq.png",
+  "extension": "png",
+  "type": "png"
 }
 ```
 
@@ -622,6 +624,8 @@ Take a screenshot of the page or element.
 - `type` (string, optional): "png" or "jpeg". Default: `"png"`
 - `fullPage` (boolean, optional): Capture full page. Default: `false`
 - `quality` (number, optional): JPEG quality (1-100). Only applies to jpeg. Default: `80`
+
+**Note:** Screenshots are saved to disk in `btw_media/` directory in the user's home directory. The response returns the file path, not the base64 image data.
 
 ---
 
@@ -665,13 +669,17 @@ Generate PDF of the page.
 **Response:**
 ```json
 {
-  "data": "base64-encoded-pdf-data"
+  "success": true,
+  "filePath": "/home/username/btw_media/pdf_1771615449415_xa1npl.pdf",
+  "fileName": "pdf_1771615449415_xa1npl.pdf"
 }
 ```
 
 **Parameters:**
 - `format` (string, optional): Paper format. Default: `"A4"`
 - `printBackground` (boolean, optional): Print backgrounds. Default: `true`
+
+**Note:** PDFs are saved to disk in `btw_media/` directory in the user's home directory. The response returns the file path, not the base64 PDF data.
 
 ---
 
@@ -2115,3 +2123,260 @@ curl http://localhost:3000/api/tabs/{tabId}/network/requests?limit=100
 ## Total Endpoints: **74**
 
 All endpoints return JSON responses. Errors return `{ "error": "message" }` with appropriate HTTP status codes.
+
+---
+
+## 🧠 Vibe Coding Use Cases
+
+BTW is particularly useful for "vibe coding" workflows where AI models need to understand, analyze, and interact with websites to help developers achieve their goals.
+
+### Understanding Website Structure
+
+When developers ask: *"How can I build a website like..."* or *"Analyze how this website is designed"*
+
+**: AI Workflow:**
+1. Navigate to target website
+2. Take screenshots to capture visual layout
+3. Extract page structure (headings, sections, navigation)
+4. Analyze CSS and color schemes
+5. Identify design patterns and components
+6. Extract content structure and copy
+7. Note interactions and animations
+
+**: Relevant Endpoints:**
+- `/api/tabs/{sessionId}/goto` - Navigate to website
+- `/api/tabs/{sessionId}/screenshot` - Capture visual design
+- `/api/tabs/{sessionId}/evaluate` - Extract structure
+- `/api/tabs/{sessionId}/elements/find` - Discover components
+- `/api/tabs/{sessionId}/console/logs` - Check for framework detection
+
+---
+
+### Learning from Competitive Analysis
+
+When developers ask: *"What do competitor websites look like?"* or *"How can I improve my site compared to..."*
+
+**: AI Workflow:**
+1. Navigate to competitor sites
+2. Capture screenshots for visual comparison
+3. Extract pricing, features, and offerings
+4. Analyze UX patterns and user flows
+5. Identify strengths and weaknesses
+6. Note unique features and differentiators
+7. Suggest improvements based on findings
+
+**: Relevant Endpoints:**
+- `/api/tabs/{sessionId}/screenshot` - Visual comparison
+- `/api/tabs/{sessionId}/evaluate` - Extract structured data
+- `/api/tabs/{sessionId}/element/info` - Understand interactions
+- `/api/tabs/{sessionId}/network/requests` - Analyze backend architecture
+
+---
+
+### Debugging Web Applications
+
+When developers ask: *"Why isn't my website working?"* or *"Debug this issue"*
+
+**: AI Workflow:**
+1. Navigate to problematic page
+2. Check console logs for JavaScript errors
+3. Monitor network requests for failed API calls
+4. Inspect element states and DOM structure
+5. Take screenshots of error states
+6. Test form submissions and interactions
+7. Analyze performance metrics
+
+**: Relevant Endpoints:**
+- `/api/tabs/{sessionId}/console/logs` - Find JavaScript errors
+- `/api/tabs/{sessionId}/network/requests` - Check API calls
+- `/api/tabs/{sessionId}/screenshot` - Document error state
+- `/api/tabs/{sessionId}/element/info` - Inspect DOM
+- `/api/tabs/{sessionId}/evaluate` - Run diagnostic scripts
+
+---
+
+### Web Scraping Modern Applications
+
+When developers ask: *"Extract data from this website"* or *"Get product information from..."*
+
+**: AI Workflow:**
+1. Navigate to target page
+2. Wait for dynamic content to load (network idle)
+3. Locate data elements using selectors
+4. Extract structured data using JavaScript
+5. Handle pagination and infinite scrolling
+6. Clean and format extracted data
+7. Export to desired format
+
+**: Relevant Endpoints:**
+- `/api/tabs/{sessionId}/goto` - Navigate to pages
+- `/api/tabs/{sessionId}/wait/network-idle` - Wait for content
+- `/api/tabs/{sessionId}/element/info` - Verify selectors
+- `/api/tabs/{sessionId}/evaluate` - Extract data
+- `/api/tabs/{sessionId}/element/click` - Handle pagination
+
+---
+
+### Testing Responsive Design
+
+When developers ask: *"Does my site work on mobile?"* or *"Check different screen sizes"*
+
+**: AI Workflow:**
+1. Create tabs with different viewport sizes
+2. For each viewport:
+   - Set viewport dimensions
+   - Navigate to website
+   - Take screenshots
+   - Test touch interactions
+   - Test mobile-specific features
+3. Compare screenshots to identify issues
+4. Provide specific recommendations
+
+**: Relevant Endpoints:**
+- `/api/tabs/{sessionId}/emulation/viewport` - Set screen sizes
+- `/api/tabs/{sessionId}/screenshot` - Compare layouts
+- `/api/tabs/{sessionId}/element/tap` - Test touch interactions
+- Common mobile viewports: 375x667 (iPhone), 360x640 (Android), 768x1024 (iPad)
+
+---
+
+### Performance Analysis
+
+When developers ask: *"Why is my site slow?"* or *"Analyze page performance"*
+
+**: AI Workflow:**
+1. Navigate to page
+2. Monitor network requests to identify slow resources
+3. Check load times and performance metrics
+4. Identify large assets (images, scripts)
+5. Analyze render-blocking resources
+6. Check for unused JavaScript/CSS
+7. Provide optimization recommendations
+
+**: Relevant Endpoints:**
+- `/api/tabs/{sessionId}/network/requests` - Analyze resource loading
+- `/api/tabs/{sessionId}/evaluate` - Get performance metrics
+- `/api/tabs/{sessionId}/console/logs` - Check for errors
+- `/api/tabs/{sessionId}/screenshot` - Document issues
+
+---
+
+### Form Automation Testing
+
+When developers ask: *"Test my login/Signup form"* or *"Automate form submission"*
+
+**: AI Workflow:**
+1. Navigate to form page
+2. Inspect form structure and inputs
+3. Fill all required fields with test data
+4. Submit form
+5. Wait for response/navigation
+6. Verify success/failure
+7. Check for error messages
+8. Document test results
+
+**: Relevant Endpoints:**
+- `/api/tabs/{sessionId}/element/info` - Inspect inputs
+- `/api/tabs/{sessionId}/element/fill` - Fill fields
+- `/api/tabs/{sessionId}/element/click` - Submit form
+- `/api/tabs/{sessionId}/wait/navigation` - Wait for response
+- `/api/tabs/{sessionId}/network/requests` - Check API calls
+
+---
+
+### Accessibility Testing
+
+When developers ask: *"Is my site accessible?"* or *"Test WCAG compliance"*
+
+**: AI Workflow:**
+1. Navigate to pages
+2. Analyze accessibility tree
+3. Check for proper ARIA labels
+4. Test keyboard navigation
+5. Verify color contrast
+6. Test screen reader compatibility
+7. Identify accessibility violations
+
+**: Relevant Endpoints:**
+- `/api/tabs/{sessionId}/accessibility/snapshot` - Get accessibility data
+- `/api/tabs/{sessionId}/keyboard/press` - Test keyboard navigation
+- `/api/tabs/{sessionId}/evaluate` - Check ARIA attributes
+- `/api/tabs/{sessionId}/screenshot` - Document issues
+
+---
+
+### SEO Analysis
+
+When developers ask: *"Analyze my site's SEO"* or *"Check if my site is optimized for search"*
+
+**: AI Workflow:**
+1. Navigate to pages
+2. Extract meta tags (title, description, keywords)
+3. Check heading structure (H1, H2, H3)
+4. Analyze URL structure and sitemaps
+5. Check for canonical tags
+6. Analyze internal link structure
+7. Identify SEO opportunities and issues
+
+**: Relevant Endpoints:**
+- `/api/tabs/{sessionId}/evaluate` - Extract SEO data
+- `/api/tabs/{sessionId}/elements/find` - Find headings, links
+- `/api/tabs/{sessionId}/network/requests` - Check for robots.txt, sitemap.xml
+
+---
+
+### Learning New Frameworks/Libraries
+
+When developers ask: *"How does this framework work?"* or *"Explain this website's tech stack"*
+
+**: AI Workflow:**
+1. Navigate to website using target framework
+2. Analyze loaded scripts and dependencies
+3. Extract component structure
+4. Study data binding and state management
+5. Inspect API communication patterns
+6. Document architecture and patterns
+7. Provide explanations and examples
+
+**: Relevant Endpoints:**
+- `/api/tabs/{sessionId}/network/requests` - Identify libraries and APIs
+- `/api/tabs/{sessionId}/console/logs` - Detect framework usage
+- `/api/tabs/{sessionId}/evaluate` - Extract component data
+- `/api/tabs/{sessionId}/screenshot` - Visual documentation
+
+---
+
+## 🎯 For AI Models: Essential Concepts
+
+### Session Management
+- Each tab has a unique `sessionId` (UUID v4)
+- You MUST use `sessionId` for all tab operations
+- Tabs persist until explicitly closed
+- Never mix up session IDs when working with multiple tabs
+
+### File-Based Output (Important!)
+- Screenshots and PDFs are saved to disk (NOT base64 in responses)
+- Files are stored in `btw_media/` in the user's home directory
+- Response returns file path, not the actual file content
+- This significantly reduces token consumption for large media
+
+### Wait Before You Act
+- Always use `wait/navigation` after `goto`
+- Always use `wait/selector` before interactions
+- Always use `wait/network-idle` for SPAs after page load
+- Never assume elements exist without verification
+
+### Clean Up After Yourself
+- Always close tabs with `DELETE /api/tabs/{sessionId}/close`
+- Always close browser when completely done
+- Always clear network/console logs before new tests
+
+### Verify Before You Operate
+- Use `elements/find` to verify selectors exist
+- Use `element/info` to understand element properties
+- Use `console/logs` to check for errors
+- Use `network/requests` to verify API calls
+
+---
+
+For detailed guidance on using BTW as an AI agent, see **[AI_AGENT_GUIDE.md](AI_AGENT_GUIDE.md)**.

@@ -4,11 +4,18 @@ class BrowserManager {
   constructor() {
     this.browser = null;
     this.launchOptions = {
-      headless: false,
+      headless: 'new',
       devtools: false,
       slowMo: 0,
-      args: []
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--no-first-run',
+        '--no-zygote'
+      ]
     };
+    this.autoReconnect = true;
   }
 
   static getInstance() {
@@ -31,8 +38,7 @@ class BrowserManager {
     this.browser = await chromium.launch(this.launchOptions);
 
     this.browser.on('disconnected', () => {
-      this.browser = null;
-      console.log('Browser disconnected');
+      console.log('Browser disconnected (window closed)');
     });
 
     return { success: true, message: 'Browser launched successfully' };
@@ -100,6 +106,14 @@ class BrowserManager {
     }
 
     return this.browser;
+  }
+
+  async ensureBrowser(options = {}) {
+    if (this.browser && this.browser.isConnected()) {
+      return this.browser;
+    }
+
+    return await this.launch(options);
   }
 }
 

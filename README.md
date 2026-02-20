@@ -52,7 +52,8 @@ curl -X POST http://localhost:3000/api/browser/close
 
 ## 📖 Documentation
 
-See [API_BLUEPRINT.md](API_BLUEPRINT.md) for complete API documentation with 74+ endpoints.
+- **[AI_AGENT_GUIDE.md](AI_AGENT_GUIDE.md)** - Comprehensive guide for AI models and agents. **Start here** if you're an AI model or building AI-driven workflows.
+- **[API_BLUEPRINT.md](API_BLUEPRINT.md)** - Complete technical API reference with 70+ endpoints and detailed specifications.
 
 ## 🗂️ Project Structure
 

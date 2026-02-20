@@ -15,7 +15,7 @@ class TabManager {
   }
 
   async createTab(options = {}) {
-    const browser = this.browserManager.getBrowser();
+    const browser = await this.browserManager.ensureBrowser();
 
       const defaultViewport = options.viewport || { width: 1920, height: 1080 };
 
