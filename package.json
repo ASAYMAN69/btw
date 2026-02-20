@@ -1,7 +1,7 @@
 {
   "name": "browse-the-web",
   "version": "2.0.0",
-  "description": "Browse The Web (BTW) - AI Browser Automation API - Control browser via HTTP endpoints",
+  "description": "AI Browser Automation API - Control Headless Chrome via RESTful HTTP endpoints. Perfect for web scraping, RPA, automated testing, and AI agent integration with 70+ endpoints including screenshots, PDF generation, network monitoring, and more.",
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
@@ -12,19 +12,64 @@
     "test": "node dist/test/index.js",
     "test:basic": "curl -s http://localhost:3000/api/health && echo",
     "clean": "rm -rf dist",
-    "all": "npm run clean && npm run build && npm start"
+    "all": "npm run clean && npm run build && npm start",
+    "lint": "echo 'Linting not configured yet'",
+    "typecheck": "npx tsc --noEmit"
   },
   "keywords": [
-    "browser",
-    "automation",
+    "browser-automation",
+    "web-scraping",
+    "headless-browser",
+    "chrome-automation",
     "playwright",
-    "api",
-    "ai",
+    "selenium-alternative",
+    "puppeteer-alternative",
+    "rest-api",
+    "http-api",
+    "ai-agent",
+    "llm-integration",
+    "browser-control",
+    "web-crawler",
+    "web-robot",
+    "rpa",
+    "automated-testing",
+    "screenshot-api",
+    "pdf-generation",
+    "network-monitoring",
+    "typescript",
+    "type-safe",
+    "browser-context",
+    "multi-tab",
+    "javascript-execution",
+    "dom-manipulation",
+    "form-automation",
+    "click-automation",
+    "data-extraction",
+    "scraping-spa",
+    "dynamic-content",
+    "javascript-rendering",
+    "anti-scraping-bypass",
+    "cookies-management",
+    "localStorage",
+    "sessionStorage",
+    "network-interception",
+    "console-monitoring",
+    "webdriver-alternative",
+    "browser-as-service",
+    "browser-api",
+    "chrome-headless",
+    "chromium",
+    "browser-orchestration",
     "btw",
     "browse-the-web",
-    "typescript"
+    "ai-browser",
+    "llm-browser",
+    "gpt-browser",
+    "claude-browser",
+    "agent-browser",
+    "bot-automation"
   ],
-  "author": "",
+  "author": "AS Ayman",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
@@ -40,5 +85,17 @@
     "@types/uuid": "^10.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ASAYMAN69/btw.git"
+  },
+  "homepage": "https://github.com/ASAYMAN69/btw#readme",
+  "bugs": {
+    "url": "https://github.com/ASAYMAN69/btw/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   }
 }
