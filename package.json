@@ -1,0 +1,21 @@
+{
+  "name": "browse-the-web",
+  "version": "1.0.0",
+  "description": "Browse The Web (BTW) - AI Browser Automation API - Control browser via HTTP endpoints",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["browser", "automation", "playwright", "api", "ai", "btw", "browse-the-web"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "playwright": "^1.58.2",
+    "uuid": "^13.0.0"
+  }
+}
