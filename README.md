@@ -16,6 +16,9 @@ An AI-powered browser automation API that gives AI agents, applications, and dev
 # Install dependencies
 npm install
 
+# Build the project
+npm run build
+
 # Start the server
 npm start
 
@@ -121,6 +124,9 @@ cd btw
 # Install dependencies
 npm install
 
+# Build the project
+npm run build
+
 # Start the server
 npm start
 ```
@@ -155,6 +161,9 @@ btw start
 ## 🛠️ Development
 
 ```bash
+# Build the project
+npm run build
+
 # Start server
 npm start
 
