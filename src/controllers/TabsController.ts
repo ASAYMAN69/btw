@@ -387,6 +387,106 @@ export class TabsController {
     }
   }
 
+  /**
+   * Scroll element or page
+   */
+  public async elementScroll(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { selector, scrollX = 0, scrollY = 100 } = req.body;
+
+      const tab = this.tabManager.getTab(sessionId);
+
+      if (selector) {
+        await tab.page.locator(selector).first().evaluate((el: any, data: { x: number; y: number }) => {
+          (el as any).scrollTop += data.y;
+          (el as any).scrollLeft += data.x;
+        }, { x: scrollX, y: scrollY });
+      } else {
+        // Scroll the entire page using the page API directly
+        await tab.page.evaluate(`window.scrollBy(${scrollX}, ${scrollY})`,) as any;
+      }
+
+      res.json({ success: true });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Double click element
+   */
+  public async doubleClick(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { selector } = req.body;
+
+      const tab = this.tabManager.getTab(sessionId);
+      await tab.page.locator(selector).first().dblclick();
+
+      res.json({ success: true });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Right click element
+   */
+  public async rightClick(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { selector } = req.body;
+
+      const tab = this.tabManager.getTab(sessionId);
+      await tab.page.locator(selector).first().click({ button: 'right' });
+
+      res.json({ success: true });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Tap element
+   */
+  public async tap(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { selector } = req.body;
+
+      const tab = this.tabManager.getTab(sessionId);
+      await tab.page.locator(selector).first().tap();
+
+      res.json({ success: true });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Screenshot of element
+   */
+  public async elementScreenshot(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { selector, type = 'png' } = req.body;
+
+      const tab = this.tabManager.getTab(sessionId);
+      const screenshot = await tab.page.locator(selector).first().screenshot({ type });
+
+      const response: ScreenshotResponse = {
+        success: true,
+        result: screenshot.toString('base64'),
+        selector,
+        type,
+      };
+      res.json(response);
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
   // ============== Element Discovery ==============
 
   /**
@@ -533,6 +633,43 @@ export class TabsController {
 
       const tab = this.tabManager.getTab(sessionId);
       await tab.page.waitForLoadState('networkidle', { timeout });
+
+      res.json({ success: true });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Wait for page load
+   */
+  public async waitLoad(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+
+      const tab = this.tabManager.getTab(sessionId);
+      await tab.page.waitForLoadState('load');
+
+      res.json({ success: true });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Wait for signal in response
+   */
+  public async waitSignal(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { signal, timeout = 30000 } = req.body;
+
+      const tab = this.tabManager.getTab(sessionId);
+
+      await tab.page.waitForResponse(
+        (response: any) => response.url().includes(signal),
+        { timeout }
+      );
 
       res.json({ success: true });
     } catch (error: any) {
@@ -942,6 +1079,40 @@ export class TabsController {
   }
 
   /**
+   * Keyboard key down
+   */
+  public async keyboardDown(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { key } = req.body;
+
+      const tab = this.tabManager.getTab(sessionId);
+      await tab.page.keyboard.down(key);
+
+      res.json({ success: true });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Keyboard key up
+   */
+  public async keyboardUp(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { key } = req.body;
+
+      const tab = this.tabManager.getTab(sessionId);
+      await tab.page.keyboard.up(key);
+
+      res.json({ success: true });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
    * Mouse click at coordinates
    */
   public async mouseClick(req: Request, res: Response): Promise<void> {
@@ -968,6 +1139,57 @@ export class TabsController {
 
       const tab = this.tabManager.getTab(sessionId);
       await tab.page.mouse.move(x, y);
+
+      res.json({ success: true });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Mouse button down
+   */
+  public async mouseDown(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { button = 'left', clickCount = 1 } = req.body;
+
+      const tab = this.tabManager.getTab(sessionId);
+      await tab.page.mouse.down({ button: button as any, clickCount });
+
+      res.json({ success: true });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Mouse button up
+   */
+  public async mouseUp(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { button = 'left' } = req.body;
+
+      const tab = this.tabManager.getTab(sessionId);
+      await tab.page.mouse.up({ button: button as any });
+
+      res.json({ success: true });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Mouse wheel
+   */
+  public async mouseWheel(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { deltaX = 0, deltaY = 100 } = req.body;
+
+      const tab = this.tabManager.getTab(sessionId);
+      await tab.page.mouse.wheel(deltaX, deltaY);
 
       res.json({ success: true });
     } catch (error: any) {
@@ -1096,6 +1318,480 @@ export class TabsController {
 
       await tab.page.locator(selector).setInputFiles(files);
       res.json({ success: true, uploaded: files });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Start download handling
+   */
+  public async fileDownloadStart(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const tab = this.tabManager.getTab(sessionId);
+
+      if (!tab.downloads) {
+        tab.downloads = [];
+      }
+
+      tab.page.on('download', (download: any) => {
+        tab.downloads = tab.downloads || [];
+        tab.downloads.push({
+          suggestedFilename: download.suggestedFilename(),
+          url: download.url(),
+          startTime: Date.now(),
+        });
+      });
+
+      res.json({
+        success: true,
+        message: 'Download handling enabled'
+      });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Stop download handling
+   */
+  public async fileDownloadStop(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const tab = this.tabManager.getTab(sessionId);
+
+      tab.page.removeAllListeners('download');
+      tab.downloads = [];
+
+      res.json({ success: true });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Get active downloads
+   */
+  public async fileDownloads(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const tab = this.tabManager.getTab(sessionId);
+
+      const downloads = tab.downloads || [];
+      const isDownloading = downloads.length > 0;
+
+      if (isDownloading) {
+        res.json({
+          success: true,
+          downloading: true,
+          downloads
+        });
+      } else {
+        res.json({
+          success: true,
+          downloading: false
+        });
+      }
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Submit form
+   */
+  public async formSubmit(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { selector } = req.body;
+
+      const tab = this.tabManager.getTab(sessionId);
+      await tab.page.locator(selector).evaluate((form: any) => form.submit());
+
+      res.json({ success: true });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Reset form
+   */
+  public async formReset(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { selector } = req.body;
+
+      const tab = this.tabManager.getTab(sessionId);
+      await tab.page.locator(selector).evaluate((form: any) => form.reset());
+
+      res.json({ success: true });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Fill multiple form fields
+   */
+  public async formFillMultiple(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { fields } = req.body;
+
+      const tab = this.tabManager.getTab(sessionId);
+
+      for (const [selector, value] of Object.entries(fields)) {
+        const element = tab.page.locator(selector).first();
+        const tagName = await element.evaluate((el: any) => el.tagName.toLowerCase());
+
+        if (tagName === 'select') {
+          await element.selectOption(value as any);
+        } else {
+          await element.fill(value as string);
+        }
+      }
+
+      res.json({ success: true });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Accept dialog
+   */
+  public async dialogAccept(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { promptText } = req.body;
+
+      const tab = this.tabManager.getTab(sessionId);
+
+      tab.page.on('dialog', async (dialog: any) => {
+        await dialog.accept(promptText);
+      });
+
+      res.json({
+        success: true,
+        message: 'Dialog handler registered for future dialogs'
+      });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Dismiss dialog
+   */
+  public async dialogDismiss(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+
+      const tab = this.tabManager.getTab(sessionId);
+
+      tab.page.on('dialog', async (dialog: any) => {
+        await dialog.dismiss();
+      });
+
+      res.json({
+        success: true,
+        message: 'Dialog handler registered for future dialogs'
+      });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Setup dialog handler
+   */
+  public async dialogOn(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { action, promptText } = req.body;
+
+      const tab = this.tabManager.getTab(sessionId);
+
+      tab.page.on('dialog', async (dialog: any) => {
+        if (action === 'accept') {
+          await dialog.accept(promptText);
+        } else if (action === 'dismiss') {
+          await dialog.dismiss();
+        }
+      });
+
+      res.json({ success: true });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  // ============== Frame Handling ==============
+
+  /**
+   * List all frames
+   */
+  public async getFrames(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const tab = this.tabManager.getTab(sessionId);
+
+      const frames = await tab.page.frames();
+
+      const frameData = frames.map((frame: any) => ({
+        id: frame._id?.toString() || 'main',
+        name: frame.name(),
+        url: frame.url(),
+        parent: frame.parentFrame()?._id?.toString() || null,
+      }));
+
+      res.json({ success: true, frames: frameData });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Evaluate in frame
+   */
+  public async evaluateInFrame(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { frameId } = req.params;
+      const { script } = req.body;
+
+      const tab = this.tabManager.getTab(sessionId);
+      const frames = await tab.page.frames();
+
+      const frame = frames.find((f: any) => f._id?.toString() === frameId || (frameId === 'main' && !f.parentFrame()));
+
+      if (!frame) {
+        throw new BrowserToolError(`Frame with ID ${frameId} not found`, 404);
+      }
+
+      const result = await frame.evaluate((s: string) => eval(s), script);
+
+      res.json({ success: true, result });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  // ============== Accessibility ==============
+
+  /**
+   * Get accessibility tree
+   */
+  public async getAccessibilityTree(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const tab = this.tabManager.getTab(sessionId);
+
+      try {
+        const tree = await (tab.page as any).accessibility.snapshot();
+        res.json({ success: true, tree });
+      } catch (e) {
+        res.json({
+          success: false,
+          tree: null,
+          message: 'Accessibility not available in this browser version'
+        });
+      }
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Get accessibility snapshot
+   */
+  public async getAccessibilitySnapshot(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const tab = this.tabManager.getTab(sessionId);
+
+      try {
+        const snapshot = await (tab.page as any).accessibility.snapshot();
+        res.json({ success: true, snapshot });
+      } catch (e) {
+        res.json({
+          success: false,
+          snapshot: null,
+          message: 'Accessibility not available in this browser version'
+        });
+      }
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  // ============== Performance ==============
+
+  /**
+   * Get performance metrics
+   */
+  public async getPerformanceMetrics(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const tab = this.tabManager.getTab(sessionId);
+
+      // Playwright doesn't have page.metrics() like Puppeteer
+      // Use evaluate to get some basic metrics
+      const metrics = await tab.page.evaluate(() => {
+        const timing = (performance as any).timing || {};        return {
+          pageLoadTime: timing.loadEventEnd - timing.navigationStart,
+          domContentLoaded: timing.domContentLoadedEventEnd - timing.navigationStart,
+          domInteractive: timing.domInteractive - timing.navigationStart,
+          firstPaint: (performance as any).getEntriesByType?.('paint')?.[0]?.startTime || null,
+          firstContentfulPaint: (performance as any).getEntriesByType?.('paint')?.[1]?.startTime || null,
+          timestamp: Date.now(),
+        };
+      });
+
+      res.json({ success: true, metrics });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Start performance trace
+   */
+  public async performanceTraceStart(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const tab = this.tabManager.getTab(sessionId);
+
+      // Use browser context tracing instead of page tracing
+      tab.tracing = (tab.context as any).tracing;
+      if (!tab.tracing) {
+        throw new Error('Tracing not available in this browser context');
+      }
+
+      await tab.tracing.start({ screenshots: true, snapshots: true });
+
+      res.json({ success: true });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Stop performance trace
+   */
+  public async performanceTraceStop(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const tab = this.tabManager.getTab(sessionId);
+
+      const mediaDir = getMediaDir();
+      const fileName = generateFilename('trace', 'zip');
+      const filePath = path.join(mediaDir, fileName);
+
+      await fs.mkdir(mediaDir, { recursive: true });
+
+      if (tab.tracing) {
+        await tab.tracing.stop({ path: filePath });
+        res.json({
+          success: true,
+          filePath,
+          fileName
+        });
+      } else {
+        res.json({ success: true, message: 'No tracing in progress' });
+      }
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Start coverage collection
+   */
+  public async performanceCoverageStart(req: Request, res: Response): Promise<void> {
+    try {
+      // Playwright doesn't support coverage collection like Puppeteer
+      // Chrome DevTools Protocol can be used for this, but it's complex
+      throw new BrowserToolError(
+        'Coverage collection is not natively supported in Playwright. ' +
+        'Consider using Chrome DevTools Protocol or alternative tools.',
+        501
+      );
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Stop coverage collection
+   */
+  public async performanceCoverageStop(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const tab = this.tabManager.getTab(sessionId);
+
+      if (!tab.coverageEnabled) {
+        res.json({ success: true, jsCoverage: [], cssCoverage: [] });
+        return;
+      }
+
+      tab.coverageEnabled = false;
+
+      res.json({ success: true, jsCoverage: [], cssCoverage: [], message: 'Coverage not enabled' });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  // ============== WebSocket ==============
+
+  /**
+   * Get WebSocket connections
+   */
+  public async getWebSockets(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const tab = this.tabManager.getTab(sessionId);
+
+      if (!tab.websockets) {
+        tab.websockets = [];
+      }
+
+      const wsData = tab.websockets.map(ws => ({
+        id: ws.id,
+        url: ws.url,
+        opened: ws.opened,
+        messageCount: ws.messages?.length || 0,
+      }));
+
+      res.json({ success: true, websockets: wsData });
+    } catch (error: any) {
+      this.handleError(error, res);
+    }
+  }
+
+  /**
+   * Get WebSocket messages
+   */
+  public async getWebSocketMessages(req: Request, res: Response): Promise<void> {
+    try {
+      const sessionId = (req as any).sessionId;
+      const { wsId } = req.params;
+      const tab = this.tabManager.getTab(sessionId);
+
+      if (!tab.websockets) {
+        throw new BrowserToolError('WebSocket connections not tracked', 404);
+      }
+
+      const ws = tab.websockets.find(w => w.id.toString() === wsId);
+
+      if (!ws) {
+        throw new BrowserToolError(`WebSocket with ID ${wsId} not found`, 404);
+      }
+
+      res.json({ success: true, messages: ws.messages || [] });
     } catch (error: any) {
       this.handleError(error, res);
     }

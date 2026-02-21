@@ -85,6 +85,9 @@ export interface TabData {
   mockedResponses: Map<string, MockResponseData>;
   downloadPromise?: any;
   downloadPath?: string;
+  downloads?: DownloadInfo[];
+  tracing?: any;
+  coverageEnabled?: boolean;
 }
 
 /**
@@ -202,15 +205,30 @@ export interface ScreenshotOptions {
 }
 
 /**
- * Screenshot response
+ * Screenshot response (page screenshot)
  */
-export interface ScreenshotResponse {
+export interface PageScreenshotResponse {
   success: true;
   filePath: string;
   fileName: string;
   extension: string;
   type: string;
 }
+
+/**
+ * Element screenshot response
+ */
+export interface ElementScreenshotResponse {
+  success: true;
+  result: string;
+  selector: string;
+  type: string;
+}
+
+/**
+ * Screenshot response (either page or element)
+ */
+export type ScreenshotResponse = PageScreenshotResponse | ElementScreenshotResponse;
 
 /**
  * PDF generation options
@@ -397,6 +415,17 @@ export interface WebSocketMessage {
   server: boolean;
   text: string;
   timestamp: number;
+}
+
+// ============== Downloads ==============
+
+/**
+ * Download info
+ */
+export interface DownloadInfo {
+  suggestedFilename: string;
+  url: string;
+  startTime: number;
 }
 
 // ============== Waiting & Conditions ==============
