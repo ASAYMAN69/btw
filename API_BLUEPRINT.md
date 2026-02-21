@@ -7,29 +7,29 @@
 - **Browser Engine**: Playwright (Chromium)
 - **Pattern**: Singleton browser instance with multiple browser contexts (tabs)
 - **API Style**: REST+JSON
-- **Port**: 3000 (configurable)
+- **Port**: 5409 (default, configurable via .env)
 - **Health Check**: `GET /api/health`
 
 ## Quick Start
 ```bash
 # Launch browser
-curl -X POST http://localhost:3000/api/browser/launch
+curl -X POST http://localhost:5409/api/browser/launch
 
 # Create tab
-curl -X POST http://localhost:3000/api/tabs/create
+curl -X POST http://localhost:5409/api/tabs/create
 
 # Navigate
-curl -X POST http://localhost:3000/api/tabs/{tabId}/goto \
+curl -X POST http://localhost:5409/api/tabs/{tabId}/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com"}'
 
 # Get data
-curl -X POST http://localhost:3000/api/tabs/{tabId}/evaluate \
+curl -X POST http://localhost:5409/api/tabs/{tabId}/evaluate \
   -H "Content-Type: application/json" \
   -d '{"script":"document.title"}'
 
 # Close browser
-curl -X POST http://localhost:3000/api/browser/close
+curl -X POST http://localhost:5409/api/browser/close
 ```
 
 ---
@@ -1919,17 +1919,17 @@ All endpoints may return errors in this format:
 ### Web Scraping Example
 ```bash
 # Navigate to page
-curl -X POST http://localhost:3000/api/tabs/{tabId}/goto \
+curl -X POST http://localhost:5409/api/tabs/{tabId}/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com"}'
 
 # Wait for content
-curl -X POST http://localhost:3000/api/tabs/{tabId}/wait/selector \
+curl -X POST http://localhost:5409/api/tabs/{tabId}/wait/selector \
   -H "Content-Type: application/json" \
   -d '{"selector":".content"}'
 
 # Extract data
-curl -X POST http://localhost:3000/api/tabs/{tabId}/evaluate \
+curl -X POST http://localhost:5409/api/tabs/{tabId}/evaluate \
   -H "Content-Type: application/json" \
   -d '{"script":"document.body.innerText"}'
 ```
@@ -1937,12 +1937,12 @@ curl -X POST http://localhost:3000/api/tabs/{tabId}/evaluate \
 ### Form Automation Example
 ```bash
 # Fill form
-curl -X POST http://localhost:3000/api/tabs/{tabId/form/fill-multiple \
+curl -X POST http://localhost:5409/api/tabs/{tabId/form/fill-multiple \
   -H "Content-Type: application/json" \
   -d '{"fields":{"#username":"user","#password":"pass"}}'
 
 # Submit
-curl -X POST http://localhost:3000/api/tabs/{tabId/form/submit \
+curl -X POST http://localhost:5409/api/tabs/{tabId/form/submit \
   -H "Content-Type: application/json" \
   -d '{"selector":"form#login"}'
 ```
@@ -1950,7 +1950,7 @@ curl -X POST http://localhost:3000/api/tabs/{tabId/form/submit \
 ### Screenshot Example
 ```bash
 # Take full page screenshot
-curl -X POST http://localhost:3000/api/tabs/{tabId}/screenshot \
+curl -X POST http://localhost:5409/api/tabs/{tabId}/screenshot \
   -H "Content-Type: application/json" \
   -d '{"fullPage":true,"type":"png"}' | \
   jq -r '.data' | base64 -d > screenshot.png
@@ -1959,17 +1959,17 @@ curl -X POST http://localhost:3000/api/tabs/{tabId}/screenshot \
 ### Network Monitoring Example
 ```bash
 # Start monitoring
-curl -X POST http://localhost:3000/api/tabs/{tabId}/network/intercept \
+curl -X POST http://localhost:5409/api/tabs/{tabId}/network/intercept \
   -H "Content-Type: application/json" \
   -d '{"enabled":true}'
 
 # Navigate
-curl -X POST http://localhost:3000/api/tabs/{tabId}/goto \
+curl -X POST http://localhost:5409/api/tabs/{tabId}/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com"}'
 
 # Get requests
-curl http://localhost:3000/api/tabs/{tabId}/network/requests?limit=100
+curl http://localhost:5409/api/tabs/{tabId}/network/requests?limit=100
 ```
 
 ---

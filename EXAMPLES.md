@@ -25,19 +25,19 @@ This document provides practical examples of using BTW for various browser autom
 #!/bin/bash
 
 # Create tab and get session ID
-TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 
 # Navigate to article
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://news.example.com/article-123"}'
 
 # Wait for content to load
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/navigation
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/network-idle
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/navigation
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/network-idle
 
 # Extract article data
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/evaluate \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/evaluate \
   -H "Content-Type: application/json" \
   -d '{
     "script": "(' + function() {
@@ -52,7 +52,7 @@ curl -X POST http://localhost:3000/api/tabs/$TAB_ID/evaluate \
   }'
 
 # Close tab
-curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
+curl -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close
 ```
 
 ### Example 2: Scrape E-commerce Products
@@ -65,19 +65,19 @@ while true; do
   echo "Scraping page $PAGE..."
   
   # Create tab
-  TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+  TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
   
   # Navigate to product listing
-  curl -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+  curl -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
     -H "Content-Type: application/json" \
     -d "{\"url\":\"https://shop.example.com/products?page=$PAGE\"}"
   
   # Wait for products to load
-  curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/navigation
-  curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/network-idle
+  curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/navigation
+  curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/network-idle
   
   # Extract products
-  PRODUCTS=$(curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/evaluate \
+  PRODUCTS=$(curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/evaluate \
     -H "Content-Type: application/json" \
     -d '{
       "script": "Array.from(document.querySelectorAll(\".product-card\")).map(p => ({name: p.querySelector(\".name\")?.textContent?.trim(), price: p.querySelector(\".price\")?.textContent?.trim(), rating: p.querySelector(\".rating\")?.textContent?.trim(), url: p.querySelector(\"a\")?.href}))"
@@ -86,12 +86,12 @@ while true; do
   echo "$PRODUCTS"
   
   # Check if there are more pages
-  NEXT_PAGE=$(curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/evaluate \
+  NEXT_PAGE=$(curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/evaluate \
     -H "Content-Type: application/json" \
     -d '{"script":"document.querySelector(\".next-page\") != null"}' | jq -r '.result')
   
   # Close tab
-  curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
+  curl -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close
   
   if [ "$NEXT_PAGE" = "false" ]; then
     break
@@ -107,23 +107,23 @@ done
 ```bash
 #!/bin/bash
 
-TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 
 # Navigate
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com/product"}'
 
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/navigation
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/navigation
 
 # Extract JSON-LD structured data
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/evaluate \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/evaluate \
   -H "Content-Type: application/json" \
   -d '{
     "script": "Array.from(document.querySelectorAll(\"script[type=\\\"application/ld+json\\\"]\")).map(s => JSON.parse(s.textContent))"
   }'
 
-curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
+curl -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close
 ```
 
 ---
@@ -135,57 +135,57 @@ curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
 ```bash
 #!/bin/bash
 
-TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 
 # Navigate to signup page
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://auth.example.com/signup"}'
 
 # Wait for form
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/selector \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/selector \
   -H "Content-Type: application/json" \
   -d '{"selector":"form#signup-form","timeout":5000}'
 
 # Fill username
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/element/fill \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/element/fill \
   -H "Content-Type: application/json" \
   -d '{"selector":"#username","text":"john_doe"}'
 
 # Fill email
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/element/fill \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/element/fill \
   -H "Content-Type: application/json" \
   -d '{"selector":"#email","text":"john@example.com"}'
 
 # Fill password
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/element/fill \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/element/fill \
   -H "Content-Type: application/json" \
   -d '{"selector":"#password","text":"SecurePassword123!"}'
 
 # Fill confirm password
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/element/fill \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/element/fill \
   -H "Content-Type: application/json" \
   -d '{"selector":"#confirm-password","text":"SecurePassword123!"}'
 
 # Check terms checkbox
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/element/click \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/element/click \
   -H "Content-Type: application/json" \
   -d '{"selector":"#terms-checkbox"}'
 
 # Submit form
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/element/click \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/element/click \
   -H "Content-Type: application/json" \
   -d '{"selector":"button[type=\"submit\"]"}'
 
 # Wait for redirect
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/navigation
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/navigation
 
 # Verify success
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/evaluate \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/evaluate \
   -H "Content-Type: application/json" \
   -d '{"script":"document.body.innerText.includes(\"Welcome\")"}'
 
-curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
+curl -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close
 ```
 
 ### Example 5: Complex Form with Dropdowns
@@ -193,37 +193,37 @@ curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
 ```bash
 #!/bin/bash
 
-TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://forms.example.com/feedback"}'
 
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/selector \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/selector \
   -H "Content-Type: application/json" \
   -d '{"selector":"form","timeout":5000}'
 
 # Fill text fields
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/element/fill \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/element/fill \
   -H "Content-Type: application/json" \
   -d '{"selector":"#name","text":"John Doe"}'
 
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/element/fill \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/element/fill \
   -H "Content-Type: application/json" \
   -d '{"selector":"#email","text":"john@example.com"}'
 
 # Select from dropdown (using evaluate)
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/evaluate \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/evaluate \
   -H "Content-Type: application/json" \
   -d '{"script":"document.querySelector(\"#category\").value = \"feature-request\""}'
 
 # Select radio button
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/evaluate \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/evaluate \
   -H "Content-Type: application/json" \
   -d '{"script":"document.querySelector(\"input[name=\\\"priority\\\"][value=\\\"high\\\"]\").click()"}'
 
 # Check multiple checkboxes
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/evaluate \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/evaluate \
   -H "Content-Type: application/json" \
   -d '{
     "script": "[' + "
@@ -234,18 +234,18 @@ curl -X POST http://localhost:3000/api/tabs/$TAB_ID/evaluate \
   }'
 
 # Fill textarea
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/element/fill \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/element/fill \
   -H "Content-Type: application/json" \
   -d '{"selector":"#message","text":"This is a great product suggestion..."}'
 
 # Submit
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/element/click \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/element/click \
   -H "Content-Type: application/json" \
   -d '{"selector":"button[type=\"submit\"]"}'
 
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/navigation
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/navigation
 
-curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
+curl -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close
 ```
 
 ---
@@ -265,44 +265,44 @@ PASSWORD="TestPass123!"
 EXPECTED_URL="https://app.example.com/dashboard"
 
 # Create tab
-TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 echo "✓ Created tab"
 
 # Navigate to login
-curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://app.example.com/login"}' > /dev/null
 echo "✓ Navigated to login page"
 
 # Wait for form
-curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/selector \
+curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/selector \
   -H "Content-Type: application/json" \
   -d '{"selector":"#login-form","timeout":5000}' > /dev/null
 echo "✓ Login form loaded"
 
 # Fill credentials
-curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/element/fill \
+curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/element/fill \
   -H "Content-Type: application/json" \
   -d "{\"selector\":\"#username\",\"text\":\"$USERNAME\"}" > /dev/null
 
-curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/element/fill \
+curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/element/fill \
   -H "Content-Type: application/json" \
   -d "{\"selector\":\"#password\",\"text\":\"$PASSWORD\"}" > /dev/null
 echo "✓ Filled login credentials"
 
 # Submit
-curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/element/click \
+curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/element/click \
   -H "Content-Type: application/json" \
   -d '{"selector":"button[type=\"submit\"]"}' > /dev/null
 echo "✓ Submitted login form"
 
 # Wait for redirect
-curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/navigation \
+curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/navigation \
   -H "Content-Type: application/json" \
   -d '{"timeout":10000}' > /dev/null
 
 # Verify redirect
-CURRENT_URL=$(curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/evaluate \
+CURRENT_URL=$(curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/evaluate \
   -H "Content-Type: application/json" \
   -d '{"script":"window.location.href"}' | jq -r '.result')
 
@@ -314,7 +314,7 @@ else
 fi
 
 # Verify welcome message
-WELCOME=$(curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/evaluate \
+WELCOME=$(curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/evaluate \
   -H "Content-Type: application/json" \
   -d '{"script":"document.body.innerText.includes(\"Welcome\")"}' | jq -r '.result')
 
@@ -326,7 +326,7 @@ else
 fi
 
 # Close tab
-curl -s -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close > /dev/null
+curl -s -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close > /dev/null
 echo "✓ Closed tab"
 
 echo "🎉 All tests passed!"
@@ -337,16 +337,16 @@ echo "🎉 All tests passed!"
 ```bash
 #!/bin/bash
 
-TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com"}'
 
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/navigation
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/navigation
 
 # Get all links
-LINKS=$(curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/evaluate \
+LINKS=$(curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/evaluate \
   -H "Content-Type: application/json" \
   -d '{
     "script": "Array.from(document.querySelectorAll(\"a[href]\")).map(a => a.href).filter(href => href.startsWith(\"http\"))"
@@ -363,7 +363,7 @@ for link in $LINKS; do
   fi
 done
 
-curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
+curl -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close
 ```
 
 ---
@@ -384,30 +384,30 @@ take_screenshot() {
   
   echo "Taking $name screenshot..."
   
-  TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+  TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
   
   # Set viewport
-  curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/emulation/viewport \
+  curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/emulation/viewport \
     -H "Content-Type: application/json" \
     -d "{\"width\":$width,\"height\":$height,\"isMobile\":$is_mobile}" > /dev/null
   
   # Navigate
-  curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+  curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
     -H "Content-Type: application/json" \
     -d '{"url":"https://example.com"}' > /dev/null
   
   # Wait
-  curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/navigation > /dev/null
+  curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/navigation > /dev/null
   
   # Screenshot
-  RESULT=$(curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/screenshot \
+  RESULT=$(curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/screenshot \
     -H "Content-Type: application/json" \
     -d '{"type":"png","fullPage":true}')
   
   FILE_PATH=$(echo "$RESULT" | jq -r '.filePath')
   echo "✓ Saved to: $FILE_PATH"
   
-  curl -s -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close > /dev/null
+  curl -s -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close > /dev/null
 }
 
 # Take screenshots at different sizes
@@ -421,17 +421,17 @@ take_screenshot "mobile" 375 667 true
 ```bash
 #!/bin/bash
 
-TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 
 # Navigate to report page
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://reports.example.com/monthly-report"}'
 
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/navigation
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/navigation
 
 # Generate PDF
-RESULT=$(curl -X POST http://localhost:3000/api/tabs/$TAB_ID/pdf \
+RESULT=$(curl -X POST http://localhost:5409/api/tabs/$TAB_ID/pdf \
   -H "Content-Type: application/json" \
   -d '{
     "format": "A4",
@@ -441,7 +441,7 @@ RESULT=$(curl -X POST http://localhost:3000/api/tabs/$TAB_ID/pdf \
 FILE_PATH=$(echo "$RESULT" | jq -r '.filePath')
 echo "✓ PDF generated: $FILE_PATH"
 
-curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
+curl -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close
 ```
 
 ---
@@ -453,28 +453,28 @@ curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
 ```bash
 #!/bin/bash
 
-TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 
 # Clear network logs
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/network/clear > /dev/null
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/network/clear > /dev/null
 
 # Navigate
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://app.example.com/dashboard"}'
 
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/navigation
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/navigation
 
 # Trigger network requests (click a button)
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/element/click \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/element/click \
   -H "Content-Type: application/json" \
   -d '{"selector":".load-data"}'
 
 # Wait for network idle
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/network-idle
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/network-idle
 
 # Get all network requests
-REQUESTS=$(curl -s http://localhost:3000/api/tabs/$TAB_ID/network/requests)
+REQUESTS=$(curl -s http://localhost:5409/api/tabs/$TAB_ID/network/requests)
 
 # Filter for XHR/fetch requests
 API_ENDPOINTS=$(echo "$REQUESTS" | jq -r '.requests[] | select(.resourceType == "xhr" or .resourceType == "fetch") | "\(.method) \(.url)"')
@@ -482,7 +482,7 @@ API_ENDPOINTS=$(echo "$REQUESTS" | jq -r '.requests[] | select(.resourceType == 
 echo "API Endpoints found:"
 echo "$API_ENDPOINTS"
 
-curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
+curl -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close
 ```
 
 ### Example 11: Mock API Response
@@ -490,15 +490,15 @@ curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
 ```bash
 #!/bin/bash
 
-TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 
 # Enable network interception
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/network/intercept \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/network/intercept \
   -H "Content-Type: application/json" \
   -d '{"enabled":true,"patterns":["**/api/data"]}'
 
 # Mock response
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/network/mock-response \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/network/mock-response \
   -H "Content-Type: application/json" \
   -d '{
     "pattern": "/api/data",
@@ -508,11 +508,11 @@ curl -X POST http://localhost:3000/api/tabs/$TAB_ID/network/mock-response \
   }'
 
 # Navigate and trigger request
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"http://localhost:8000"}'
 
-curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
+curl -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close
 ```
 
 ---
@@ -533,19 +533,19 @@ for product in "${PRODUCTS[@]}"; do
   for site in "${SITES[@]}"; do
     echo "  Checking $site..."
     
-    TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+    TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
     
     # Navigate to search
-    curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+    curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
       -H "Content-Type: application/json" \
       -d "{\"url\":\"https://$site/search?q=$product\"}" > /dev/null
     
     # Wait for results
-    curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/navigation > /dev/null
-    curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/network-idle > /dev/null
+    curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/navigation > /dev/null
+    curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/network-idle > /dev/null
     
     # Extract first result
-    RESULT=$(curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/evaluate \
+    RESULT=$(curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/evaluate \
       -H "Content-Type: application/json" \
       -d '{
         "script": "const first = document.querySelector(\".product\"); return first ? {name: first.querySelector(\".title\")?.textContent?.trim(), price: first.querySelector(\".price\")?.textContent?.trim()} : null"
@@ -553,7 +553,7 @@ for product in "${PRODUCTS[@]}"; do
     
     echo "    $site: $RESULT"
     
-    curl -s -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close > /dev/null
+    curl -s -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close > /dev/null
     
     sleep 1
   done
@@ -570,18 +570,18 @@ TAGS=("#browsetheweb" "#browsethewebai" "#webautomation")
 for tag in "${TAGS[@]}"; do
   echo "Monitoring $tag..."
   
-  TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+  TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
   
   # Navigate to search
-  curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+  curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
     -H "Content-Type: application/json" \
     -d "{\"url\":\"https://twitter.com/search?q=$tag\"}" > /dev/null
   
   # Wait for results
-  curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/navigation > /dev/null
+  curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/navigation > /dev/null
   
   # Extract tweets
-  TWEETS=$(curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/evaluate \
+  TWEETS=$(curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/evaluate \
     -H "Content-Type: application/json" \
     -d '{
       "script": "Array.from(document.querySelectorAll(\"article\")).slice(0, 5).map(t => ({author: t.querySelector(\".author-name\")?.textContent?.trim(), text: t.querySelector(\".tweet-text\")?.textContent?.trim(), likes: t.querySelector(\".like-count\")?.textContent?.trim()}))"
@@ -590,11 +590,11 @@ for tag in "${TAGS[@]}"; do
   echo "$TWEETS" | jq -r '.[] | "  - \(.author): \(.text) | Likes: \(.likes)"'
   
   # Take screenshot
-  curl -s -X POST http://localhost:3000/api/tabs/$TAB_ID/screenshot \
+  curl -s -X POST http://localhost:5409/api/tabs/$TAB_ID/screenshot \
     -H "Content-Type: application/json" \
     -d '{"type":"png","fullPage":false}' > /dev/null
   
-  curl -s -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close > /dev/null
+  curl -s -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close > /dev/null
   
   sleep 2
 done
@@ -609,16 +609,16 @@ done
 ```bash
 #!/bin/bash
 
-TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com"}'
 
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/navigation
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/navigation
 
 # Get console logs
-LOGS=$(curl -s http://localhost:3000/api/tabs/$TAB_ID/console/logs)
+LOGS=$(curl -s http://localhost:5409/api/tabs/$TAB_ID/console/logs)
 
 echo "Console Logs:"
 echo "$LOGS" | jq -r '.logs[] | "[\(.type)] \(.text)" | .location'
@@ -631,7 +631,7 @@ if [ -n "$ERRORS" ]; then
   echo "$ERRORS"
 fi
 
-curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
+curl -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close
 ```
 
 ### Example 15: Performance Metrics
@@ -639,15 +639,15 @@ curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
 ```bash
 #!/bin/bash
 
-TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 
 START_TIME=$(date +%s)
 
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com"}'
 
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/navigation
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/navigation
 
 END_TIME=$(date +%s)
 LOAD_TIME=$((END_TIME - START_TIME))
@@ -655,12 +655,12 @@ LOAD_TIME=$((END_TIME - START_TIME))
 echo "Page load time: ${LOAD_TIME}s"
 
 # Get performance metrics
-METRICS=$(curl -s http://localhost:3000/api/tabs/$TAB_ID/performance/metrics)
+METRICS=$(curl -s http://localhost:5409/api/tabs/$TAB_ID/performance/metrics)
 
 echo "Performance Metrics:"
 echo "$METRICS" | jq '.metrics | to_entries[] | "  \(.key): \(.value)"'
 
-curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
+curl -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close
 ```
 
 ---
@@ -672,10 +672,10 @@ curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
 ```bash
 #!/bin/bash
 
-TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 
 # Chain multiple actions in one call
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/chain \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/chain \
   -H "Content-Type: application/json" \
   -d '{
     "actions": [
@@ -689,7 +689,7 @@ curl -X POST http://localhost:3000/api/tabs/$TAB_ID/chain \
     ]
   }'
 
-curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
+curl -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close
 ```
 
 ### Example 17: Multi-Tab Workflow
@@ -701,39 +701,39 @@ curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
 declare -a TAB_IDS
 
 # Tab 1: Product page
-TAB_IDS[0]=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
-curl -s -X POST http://localhost:3000/api/tabs/${TAB_IDS[0]}/goto \
+TAB_IDS[0]=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
+curl -s -X POST http://localhost:5409/api/tabs/${TAB_IDS[0]}/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://shop.example.com/product"}' > /dev/null
 
 # Tab 2: Reviews
-TAB_IDS[1]=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
-curl -s -X POST http://localhost:3000/api/tabs/${TAB_IDS[1]}/goto \
+TAB_IDS[1]=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
+curl -s -X POST http://localhost:5409/api/tabs/${TAB_IDS[1]}/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://reviews.example.com/product"}' > /dev/null
 
 # Tab 3: Related products
-TAB_IDS[2]=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
-curl -s -X POST http://localhost:3000/api/tabs/${TAB_IDS[2]}/goto \
+TAB_IDS[2]=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
+curl -s -X POST http://localhost:5409/api/tabs/${TAB_IDS[2]}/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://similar.example.com/product"}' > /dev/null
 
 # Wait for all to load
 for tab_id in "${TAB_IDS[@]}"; do
-  curl -s -X POST http://localhost:3000/api/tabs/$tab_id/wait/navigation > /dev/null
+  curl -s -X POST http://localhost:5409/api/tabs/$tab_id/wait/navigation > /dev/null
 done
 
 # Extract from all tabs
 for i in "${!TAB_IDS[@]}"; do
   echo "Tab $i data:"
-  curl -s -X POST http://localhost:3000/api/tabs/${TAB_IDS[$i]}/evaluate \
+  curl -s -X POST http://localhost:5409/api/tabs/${TAB_IDS[$i]}/evaluate \
     -H "Content-Type: application/json" \
     -d '{"script":"document.title"}' | jq -r '.result'
 done
 
 # Close all tabs
 for tab_id in "${TAB_IDS[@]}"; do
-  curl -s -X DELETE http://localhost:3000/api/tabs/$tab_id/close > /dev/null
+  curl -s -X DELETE http://localhost:5409/api/tabs/$tab_id/close > /dev/null
 done
 ```
 

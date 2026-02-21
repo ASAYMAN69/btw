@@ -10,7 +10,7 @@
     "build": "npx tsc",
     "build:watch": "npx tsc --watch",
     "test": "node dist/test/index.js",
-    "test:basic": "curl -s http://localhost:3000/api/health && echo",
+    "test:basic": "curl -s http://localhost:5409/api/health && echo",
     "clean": "rm -rf dist",
     "all": "npm run clean && npm run build && npm start",
     "lint": "echo 'Linting not configured yet'",
@@ -74,6 +74,7 @@
   "type": "commonjs",
   "dependencies": {
     "cors": "^2.8.6",
+    "dotenv": "^16.4.7",
     "express": "^5.2.1",
     "playwright": "^1.58.2",
     "uuid": "^13.0.0"

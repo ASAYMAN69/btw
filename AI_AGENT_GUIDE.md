@@ -55,9 +55,9 @@
 
 ### Server Details
 
-- **Base URL**: `http://localhost:3000`
+- **Base URL**: `http://localhost:5409`
 - **API prefix**: All endpoints are under `/api/`
-- **Port**: 3000 (default)
+- **Port**: 5409 (default, configurable via .env)
 - **Format**: JSON requests and responses
 - **Engine**: Node.js with Express and Playwright (Chromium)
 
@@ -1606,10 +1606,10 @@ POST /api/tabs/{sessionId}/evaluate {"script": "..."}
 **Solution**: Always store and use the correct `sessionId`:
 ```bash
 # Create tab 1
-TAB1=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB1=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 
 # Create tab 2
-TAB2=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB2=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 
 # Use correct session IDs
 POST /api/tabs/${TAB1}/goto {"url": "https://site1.com"}

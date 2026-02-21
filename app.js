@@ -1,11 +1,25 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+require('dotenv').config();
 
 const { browserManager, tabManager } = require('./managers');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+
+function getValidPort(portFromEnv) {
+  const DEFAULT_PORT = 5409;
+  if (!portFromEnv || portFromEnv.trim() === '') {
+    return DEFAULT_PORT;
+  }
+  const port = parseInt(portFromEnv, 10);
+  if (isNaN(port) || port <= 0 || port > 65535) {
+    return DEFAULT_PORT;
+  }
+  return port;
+}
+
+const PORT = getValidPort(process.env.PORT);
 
 app.use(cors());
 app.use(express.json());

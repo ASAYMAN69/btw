@@ -1,5 +1,6 @@
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
+import 'dotenv/config';
 import { getBrowserManager, getTabManager } from './managers';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 import browserRoutes from './routes/browser.routes';
@@ -18,14 +19,27 @@ import tabsRoutes from './routes/tabs.routes';
  * - Comprehensive browser automation capabilities
  */
 
+const DEFAULT_PORT = 5409;
+
+function getValidPort(portFromEnv?: string): number {
+  if (!portFromEnv || portFromEnv.trim() === '') {
+    return DEFAULT_PORT;
+  }
+  const port = parseInt(portFromEnv, 10);
+  if (isNaN(port) || port <= 0 || port > 65535) {
+    return DEFAULT_PORT;
+  }
+  return port;
+}
+
 class BrowserToolServer {
   private app: Express;
   private port: number;
   private isShuttingDown: boolean;
 
-  constructor(port: number = 3000) {
+  constructor(port?: string | number) {
     this.app = express();
-    this.port = port;
+    this.port = getValidPort(typeof port === 'string' ? port : port?.toString());
     this.isShuttingDown = false;
 
     this.setupMiddleware();
@@ -185,8 +199,7 @@ export { BrowserToolServer };
 
 // Start server if this file is run directly
 if (require.main === module) {
-  const port = parseInt(process.env.PORT || '3000', 10);
-  const server = new BrowserToolServer(port);
+  const server = new BrowserToolServer(process.env.PORT);
   server.start().catch(console.error);
 }
 

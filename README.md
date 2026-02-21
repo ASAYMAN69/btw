@@ -22,30 +22,30 @@ npm run build
 # Start the server
 npm start
 
-# Server runs on http://localhost:3000
+# Server runs on http://localhost:5409
 ```
 
 ## 📚 Example Usage
 
 ```bash
 # Launch browser
-curl -X POST http://localhost:3000/api/browser/launch
+curl -X POST http://localhost:5409/api/browser/launch
 
 # Create tab
-curl -X POST http://localhost:3000/api/tabs/create
+curl -X POST http://localhost:5409/api/tabs/create
 
 # Navigate to a website
-curl -X POST http://localhost:3000/api/tabs/{tabId}/goto \
+curl -X POST http://localhost:5409/api/tabs/{tabId}/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com"}'
 
 # Extract data
-curl -X POST http://localhost:3000/api/tabs/{tabId}/evaluate \
+curl -X POST http://localhost:5409/api/tabs/{tabId}/evaluate \
   -H "Content-Type: application.json" \
   -d '{"script":"document.title"}'
 
 # Close browser
-curl -X POST http://localhost:3000/api/browser/close
+curl -X POST http://localhost:5409/api/browser/close
 ```
 
 ## ✨ Features
@@ -168,7 +168,7 @@ npm run build
 npm start
 
 # API health check
-curl http://localhost:3000/api/health
+curl http://localhost:5409/api/health
 ```
 
 ## 📊 Supported Operations

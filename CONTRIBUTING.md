@@ -66,7 +66,7 @@ Help translate documentation to other languages.
 
 5. **Verify Setup**
    ```bash
-   curl http://localhost:3000/api/health
+   curl http://localhost:5409/api/health
    ```
 
 ## 📋 Development Workflow

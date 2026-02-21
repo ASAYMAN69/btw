@@ -91,7 +91,7 @@ npm run build
 npm start
 ```
 
-BTW will start on `http://localhost:3000`
+BTW will start on `http://localhost:5409`
 
 ### Method 2: Install via npm (Coming Soon)
 
@@ -107,28 +107,13 @@ btw start
 
 ```bash
 # Check if the server is running
-curl http://localhost:3000/api/health
-
-# Expected response:
-# {"status":"ok","timestamp":1234567890123}
-```
-
----
-
-## 🎬 First Steps
-
-Let's create your first automated browsing session!
-
-### Step 1: Check Server Health
-
-```bash
-curl http://localhost:3000/api/health
+curl http://localhost:5409/api/health
 ```
 
 ### Step 2: Check Browser Status
 
 ```bash
-curl http://localhost:3000/api/browser/status
+curl http://localhost:5409/api/browser/status
 ```
 
 Response:
@@ -144,7 +129,7 @@ Response:
 ### Step 3: Create a New Tab
 
 ```bash
-curl -X POST http://localhost:3000/api/tabs/create \
+curl -X POST http://localhost:5409/api/tabs/create \
   -H "Content-Type: application/json" \
   -d '{}'
 ```
@@ -165,7 +150,7 @@ Response (save this `sessionId`):
 
 ```bash
 # Replace YOUR_SESSION_ID with the actual session ID from step 3
-curl -X POST http://localhost:3000/api/tabs/YOUR_SESSION_ID/goto \
+curl -X POST http://localhost:5409/api/tabs/YOUR_SESSION_ID/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com"}'
 ```
@@ -182,13 +167,13 @@ Response:
 ### Step 5: Wait for Page to Load
 
 ```bash
-curl -X POST http://localhost:3000/api/tabs/YOUR_SESSION_ID/wait/navigation
+curl -X POST http://localhost:5409/api/tabs/YOUR_SESSION_ID/wait/navigation
 ```
 
 ### Step 6: Extract Page Data
 
 ```bash
-curl -X POST http://localhost:3000/api/tabs/YOUR_SESSION_ID/evaluate \
+curl -X POST http://localhost:5409/api/tabs/YOUR_SESSION_ID/evaluate \
   -H "Content-Type: application/json" \
   -d '{"script":"document.title"}'
 ```
@@ -204,7 +189,7 @@ Response:
 ### Step 7: Take a Screenshot
 
 ```bash
-curl -X POST http://localhost:3000/api/tabs/YOUR_SESSION_ID/screenshot \
+curl -X POST http://localhost:5409/api/tabs/YOUR_SESSION_ID/screenshot \
   -H "Content-Type: application/json" \
   -d '{"type":"png","fullPage":true}'
 ```
@@ -223,7 +208,7 @@ Response:
 ### Step 8: Close the Tab
 
 ```bash
-curl -X DELETE http://localhost:3000/api/tabs/YOUR_SESSION_ID/close
+curl -X DELETE http://localhost:5409/api/tabs/YOUR_SESSION_ID/close
 ```
 
 ---
@@ -234,129 +219,129 @@ curl -X DELETE http://localhost:3000/api/tabs/YOUR_SESSION_ID/close
 
 ```bash
 # Create tab
-TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 
 # Navigate to product page
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com/products"}'
 
 # Wait for content to load
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/navigation
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/network-idle
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/navigation
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/network-idle
 
 # Extract product data
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/evaluate \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/evaluate \
   -H "Content-Type: application/json" \
   -d '{
     "script": "Array.from(document.querySelectorAll(\".product\")).map(p => ({name: p.querySelector(\".title\")?.textContent, price: p.querySelector(\".price\")?.textContent}))"
   }'
 
 # Close tab
-curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
+curl -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close
 ```
 
 ### 2. Automated Testing - Sign Up Form
 
 ```bash
 # Create tab
-TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 
 # Navigate to signup page
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com/signup"}'
 
 # Wait for form to load
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/selector \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/selector \
   -H "Content-Type: application/json" \
   -d '{"selector":"form#signup"}'
 
 # Fill form fields
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/element/fill \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/element/fill \
   -H "Content-Type: application/json" \
   -d '{"selector":"#username","text":"testuser"}'
 
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/element/fill \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/element/fill \
   -H "Content-Type: application/json" \
   -d '{"selector":"#email","text":"test@example.com"}'
 
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/element/fill \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/element/fill \
   -H "Content-Type: application/json" \
   -d '{"selector":"#password","text":"password123"}'
 
 # Submit form
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/element/click \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/element/click \
   -H "Content-Type: application/json" \
   -d '{"selector":"button[type=\"submit\"]"}'
 
 # Wait for navigation
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/navigation
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/navigation
 
 # Verify success
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/evaluate \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/evaluate \
   -H "Content-Type: application/json" \
   -d '{"script":"document.body.innerText.includes(\"Welcome\")"}'
 
 # Close tab
-curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
+curl -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close
 ```
 
 ### 3. Screenshot - Capture Website Design
 
 ```bash
 # Create tab
-TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 
 # Set mobile viewport
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/emulation/viewport \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/emulation/viewport \
   -H "Content-Type: application/json" \
   -d '{"width":375,"height":667,"isMobile":true}'
 
 # Navigate
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com"}'
 
 # Wait for load
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/navigation
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/navigation
 
 # Capture screenshot
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/screenshot \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/screenshot \
   -H "Content-Type: application/json" \
   -d '{"type":"png","fullPage":true}'
 
 # Close tab
-curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
+curl -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close
 ```
 
 ### 4. Network Monitoring - Find API Endpoints
 
 ```bash
 # Create tab
-TAB_ID=$(curl -s -X POST http://localhost:3000/api/tabs/create | jq -r '.sessionId')
+TAB_ID=$(curl -s -X POST http://localhost:5409/api/tabs/create | jq -r '.sessionId')
 
 # Clear network logs
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/network/clear
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/network/clear
 
 # Navigate
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/goto \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com"}'
 
 # Trigger action (e.g., click a button)
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/element/click \
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/element/click \
   -H "Content-Type: application/json" \
   -d '{"selector":".load-data"}'
 
 # Wait for network idle
-curl -X POST http://localhost:3000/api/tabs/$TAB_ID/wait/network-idle
+curl -X POST http://localhost:5409/api/tabs/$TAB_ID/wait/network-idle
 
 # Get all network requests
-curl http://localhost:3000/api/tabs/$TAB_ID/network/requests
+curl http://localhost:5409/api/tabs/$TAB_ID/network/requests
 
 # Close tab
-curl -X DELETE http://localhost:3000/api/tabs/$TAB_ID/close
+curl -X DELETE http://localhost:5409/api/tabs/$TAB_ID/close
 ```
 
 ---
@@ -439,11 +424,11 @@ BTW can be integrated with:
    npm run build
    npm start
    ```
-3. Check if port 3000 is already in use:
-   ```bash
-   lsof -i :3000  # macOS/Linux
-   netstat -ano | findstr :3000  # Windows
-   ```
+ 3. Check if port 5409 is already in use:
+    ```bash
+    lsof -i :5409  # macOS/Linux
+    netstat -ano | findstr :5409  # Windows
+    ```
 
 ### Browser Not Auto-Launching
 
@@ -452,13 +437,13 @@ BTW can be integrated with:
 **Solutions**:
 1. Manually launch browser:
    ```bash
-   curl -X POST http://localhost:3000/api/browser/launch \
+   curl -X POST http://localhost:5409/api/browser/launch \
      -H "Content-Type: application/json" \
      -d '{"headless":true}'
    ```
 2. Check browser status:
    ```bash
-   curl http://localhost:3000/api/browser/status
+   curl http://localhost:5409/api/browser/status
    ```
 3. Restart server:
    ```bash
@@ -473,13 +458,13 @@ BTW can be integrated with:
 **Solutions**:
 1. Increase timeout value:
    ```bash
-   curl -X POST http://localhost:3000/api/tabs/YOUR_SESSION_ID/wait/selector \
+   curl -X POST http://localhost:5409/api/tabs/YOUR_SESSION_ID/wait/selector \
      -H "Content-Type: application/json" \
      -d '{"selector":".element","timeout":10000}'
    ```
 2. Use `network-idle` instead:
    ```bash
-   curl -X POST http://localhost:3000/api/tabs/YOUR_SESSION_ID/wait/network-idle
+   curl -X POST http://localhost:5409/api/tabs/YOUR_SESSION_ID/wait/network-idle
    ```
 
 ### Element Not Found
@@ -489,13 +474,13 @@ BTW can be integrated with:
 **Solutions**:
 1. Verify selector works:
    ```bash
-   curl -X POST http://localhost:3000/api/tabs/YOUR_SESSION_ID/elements/find \
+   curl -X POST http://localhost:5409/api/tabs/YOUR_SESSION_ID/elements/find \
      -H "Content-Type: application/json" \
      -d '{"selector":".element","limit":10}'
    ```
 2. Wait for element:
    ```bash
-   curl -X POST http://localhost:3000/api/tabs/YOUR_SESSION_ID/wait/selector \
+   curl -X POST http://localhost:5409/api/tabs/YOUR_SESSION_ID/wait/selector \
      -H "Content-Type: application/json" \
      -d '{"selector":".element","timeout":5000}'
    ```
@@ -507,11 +492,11 @@ BTW can be integrated with:
 **Solutions**:
 1. List active tabs:
    ```bash
-   curl http://localhost:3000/api/tabs/list
+   curl http://localhost:5409/api/tabs/list
    ```
 2. Create a new tab if needed:
    ```bash
-   curl -X POST http://localhost:3000/api/tabs/create
+   curl -X POST http://localhost:5409/api/tabs/create
    ```
 3. Make sure you're using the correct `sessionId`
 
@@ -522,11 +507,11 @@ BTW can be integrated with:
 **Solutions**:
 1. Close tabs when done:
    ```bash
-   curl -X DELETE http://localhost:3000/api/tabs/YOUR_SESSION_ID/close
+   curl -X DELETE http://localhost:5409/api/tabs/YOUR_SESSION_ID/close
    ```
 2. Restart browser periodically:
    ```bash
-   curl -X POST http://localhost:3000/api/browser/restart
+   curl -X POST http://localhost:5409/api/browser/restart
    ```
 3. Limit concurrent tabs
 
