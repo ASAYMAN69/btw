@@ -1,0 +1,89 @@
+{
+  "chromeAPIs": {
+    "core": [
+      "accessibilityFeatures",
+      "alarms",
+      "action",
+      "commands",
+      "contextMenus",
+      "extension",
+      "extensionTypes",
+      "events",
+      "runtime",
+      "permissions"
+    ],
+    "ui": [
+      "notifications",
+      "sidePanel",
+      "fontSettings"
+    ],
+    "tabsWindows": [
+      "tabs",
+      "windows",
+      "tabCapture",
+      "tabGroups",
+      "webNavigation",
+      "topSites"
+    ],
+    "network": [
+      "cookies",
+      "proxy",
+      "webRequest",
+      "declarativeNetRequest",
+      "webAuthenticationProxy"
+    ],
+    "storage": [
+      "storage"
+    ],
+    "system": [
+      "system.cpu",
+      "system.memory",
+      "system.storage",
+      "system.display",
+      "systemLog"
+    ],
+    "downloadsPrint": [
+      "downloads",
+      "printing",
+      "printingMetrics"
+    ],
+    "searchSessions": [
+      "search",
+      "sessions",
+      "readingList"
+    ],
+    "speech": [
+      "tts",
+      "ttsEngine"
+    ],
+    "debugging": [
+      "debugger",
+      "processes",
+      "enterprise.deviceAttributes",
+      "enterprise.hardwarePlatform",
+      "enterprise.login",
+      "enterprise.networkingAttributes",
+      "enterprise.platformKeys"
+    ],
+    "content": [
+      "scripting",
+      "userScripts"
+    ],
+    "osSpecificChromeOS": [
+      "audio",
+      "fileBrowserHandler",
+      "fileSystemProvider",
+      "printerProvider",
+      "vpnProvider",
+      "wallpaper"
+    ],
+    "misc": [
+      "privacy",
+      "power"
+    ]
+  },
+  "deprecatedOrSpecialNotes": [
+    "webRequest blocking capabilities are limited in Manifest V3 and largely replaced by declarativeNetRequest.",
+    "Some enterprise APIs require policy installation and ChromeOS."
+  ]
+}

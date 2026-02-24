@@ -1,0 +1,16 @@
+{
+  "tabsAPIs": [
+    "create (createTab)",
+    "get (getTab)",
+    "update (updateTab)",
+    "remove (closeTab)",
+    "query (queryTabs)",
+    "reload (reloadTab)",
+    "goBack (navigateBack)",
+    "goForward (navigateForward)",
+    "setZoom",
+    "captureVisibleTab (screenshot)",
+    "executeScript (inject JavaScript)",
+    "insertCSS (inject styles)"
+  ]
+}
