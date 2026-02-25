@@ -4,11 +4,31 @@ const path = require('path');
 const http = require('http');
 const WebSocket = require('ws');
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
+const os = require('os');
 require('dotenv').config();
 
 const { browserManager, tabManager } = require('./managers');
 
 const app = express();
+
+function getMediaDir() {
+  return path.join(os.homedir(), 'btw_media');
+}
+
+function generateFilename(prefix, extension) {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 8);
+  return `${prefix}_${timestamp}_${random}.${extension}`;
+}
+
+function ensureMediaDir() {
+  const mediaDir = getMediaDir();
+  if (!fs.existsSync(mediaDir)) {
+    fs.mkdirSync(mediaDir, { recursive: true });
+  }
+  return mediaDir;
+}
 
 function getValidPort(portFromEnv) {
   const DEFAULT_PORT = 5409;
@@ -28,6 +48,33 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+async function waitForResponse(requestId, timeoutMs = 30000) {
+  const checkInterval = 100;
+  const startTime = Date.now();
+
+  return new Promise((resolve, reject) => {
+    const interval = setInterval(() => {
+      if (Date.now() - startTime > timeoutMs) {
+        clearInterval(interval);
+        reject(new Error('Operation timeout'));
+        return;
+      }
+
+      const request = wssPendingRequests.get(requestId);
+      if (request && request.completed) {
+        clearInterval(interval);
+        wssPendingRequests.delete(requestId);
+        if (request.response && request.response.success) {
+          resolve(request.response.result || {});
+        } else {
+          reject(new Error(request.response?.error || 'Operation failed'));
+        }
+      }
+    }, checkInterval);
+  });
+}
+
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: Date.now() });
 });
@@ -36,9 +83,9 @@ app.use('/api/browser', require('./routes/browser'));
 app.use('/api/tabs', require('./routes/tabs'));
 app.use('/api/usercontrolled', require('./routes/usercontrolled'));
 
-app.post('/api/browser/:sessionId/tabs/create', (req, res) => {
+app.post('/api/browser/:sessionId/tabs/create', async (req, res) => {
   const session = wssSessions.get(req.params.sessionId);
-  
+
   if (!session) {
     return res.status(404).json({ error: 'Session not found' });
   }
@@ -49,11 +96,12 @@ app.post('/api/browser/:sessionId/tabs/create', (req, res) => {
 
   const { url = 'chrome://newtab' } = req.body;
   const requestId = uuidv4().substring(0, 8);
-  
+
   const pendingRequest = {
     requestId,
     sessionId: session.sessionId,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    completed: false
   };
 
   wssPendingRequests.set(requestId, pendingRequest);
@@ -69,18 +117,28 @@ app.post('/api/browser/:sessionId/tabs/create', (req, res) => {
 
   session.ws.send(JSON.stringify(message));
 
-  res.json({
-    success: true,
-    sessionId: session.sessionId,
-    requestId,
-    message: 'Create tab command sent to browser',
-    timestamp: Date.now()
-  });
+  try {
+    const result = await waitForResponse(requestId, 30000);
+    res.json({
+      success: true,
+      sessionId: session.sessionId,
+      requestId,
+      result,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    wssPendingRequests.delete(requestId);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: Date.now()
+    });
+  }
 });
 
-app.get('/api/browser/:sessionId/tabs', (req, res) => {
+app.get('/api/browser/:sessionId/tabs', async (req, res) => {
   const session = wssSessions.get(req.params.sessionId);
-  
+
   if (!session) {
     return res.status(404).json({ error: 'Session not found' });
   }
@@ -90,7 +148,16 @@ app.get('/api/browser/:sessionId/tabs', (req, res) => {
   }
 
   const requestId = uuidv4().substring(0, 8);
-  
+
+  const pendingRequest = {
+    requestId,
+    sessionId: session.sessionId,
+    timestamp: Date.now(),
+    completed: false
+  };
+
+  wssPendingRequests.set(requestId, pendingRequest);
+
   const message = {
     type: 'tabs.query',
     requestId,
@@ -102,18 +169,28 @@ app.get('/api/browser/:sessionId/tabs', (req, res) => {
 
   session.ws.send(JSON.stringify(message));
 
-  res.json({
-    success: true,
-    sessionId: session.sessionId,
-    requestId,
-    message: 'Query tabs command sent to browser',
-    timestamp: Date.now()
-  });
+  try {
+    const result = await waitForResponse(requestId, 30000);
+    res.json({
+      success: true,
+      sessionId: session.sessionId,
+      requestId,
+      result,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    wssPendingRequests.delete(requestId);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: Date.now()
+    });
+  }
 });
 
-app.delete('/api/browser/:sessionId/tabs/:tabId', (req, res) => {
+app.delete('/api/browser/:sessionId/tabs/:tabId', async (req, res) => {
   const session = wssSessions.get(req.params.sessionId);
-  
+
   if (!session) {
     return res.status(404).json({ error: 'Session not found' });
   }
@@ -124,7 +201,16 @@ app.delete('/api/browser/:sessionId/tabs/:tabId', (req, res) => {
 
   const { tabId } = req.params;
   const requestId = uuidv4().substring(0, 8);
-  
+
+  const pendingRequest = {
+    requestId,
+    sessionId: session.sessionId,
+    timestamp: Date.now(),
+    completed: false
+  };
+
+  wssPendingRequests.set(requestId, pendingRequest);
+
   const message = {
     type: 'tabs.closeTab',
     requestId,
@@ -136,51 +222,28 @@ app.delete('/api/browser/:sessionId/tabs/:tabId', (req, res) => {
 
   session.ws.send(JSON.stringify(message));
 
-  res.json({
-    success: true,
-    sessionId: session.sessionId,
-    requestId,
-    message: 'Close tab command sent to browser',
-    timestamp: Date.now()
-  });
+  try {
+    const result = await waitForResponse(requestId, 10000);
+    res.json({
+      success: true,
+      sessionId: session.sessionId,
+      requestId,
+      result,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    wssPendingRequests.delete(requestId);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: Date.now()
+    });
+  }
 });
 
-app.get('/api/browser/:sessionId/tabs', (req, res) => {
+app.patch('/api/browser/:sessionId/tabs/:tabId', async (req, res) => {
   const session = wssSessions.get(req.params.sessionId);
-  
-  if (!session) {
-    return res.status(404).json({ error: 'Session not found' });
-  }
 
-  if (session.ws.readyState !== WebSocket.OPEN) {
-    return res.status(503).json({ error: 'Session is not connected' });
-  }
-
-  const requestId = uuidv4().substring(0, 8);
-  
-  const message = {
-    type: 'tabs.query',
-    requestId,
-    sessionId: session.sessionId,
-    data: {},
-    from: 'server',
-    timestamp: Date.now()
-  };
-
-  session.ws.send(JSON.stringify(message));
-
-  res.json({
-    success: true,
-    sessionId: session.sessionId,
-    requestId,
-    message: 'Query tabs command sent to browser',
-    timestamp: Date.now()
-  });
-  });
-
-app.patch('/api/browser/:sessionId/tabs/:tabId', (req, res) => {
-  const session = wssSessions.get(req.params.sessionId);
-  
   if (!session) {
     return res.status(404).json({ error: 'Session not found' });
   }
@@ -192,7 +255,16 @@ app.patch('/api/browser/:sessionId/tabs/:tabId', (req, res) => {
   const { tabId } = req.params;
   const { url, active, pinned, muted, highlighted } = req.body;
   const requestId = uuidv4().substring(0, 8);
-  
+
+  const pendingRequest = {
+    requestId,
+    sessionId: session.sessionId,
+    timestamp: Date.now(),
+    completed: false
+  };
+
+  wssPendingRequests.set(requestId, pendingRequest);
+
   const message = {
     type: 'tabs.update',
     requestId,
@@ -204,13 +276,182 @@ app.patch('/api/browser/:sessionId/tabs/:tabId', (req, res) => {
 
   session.ws.send(JSON.stringify(message));
 
-  res.json({
-    success: true,
-    sessionId: session.sessionId,
+  try {
+    const result = await waitForResponse(requestId, 30000);
+    res.json({
+      success: true,
+      sessionId: session.sessionId,
+      requestId,
+      result,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    wssPendingRequests.delete(requestId);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: Date.now()
+    });
+  }
+});
+
+app.post('/api/browser/:sessionId/tabs/:tabId/reload', async (req, res) => {
+  const session = wssSessions.get(req.params.sessionId);
+
+  if (!session) {
+    return res.status(404).json({ error: 'Session not found' });
+  }
+
+  if (session.ws.readyState !== WebSocket.OPEN) {
+    return res.status(503).json({ error: 'Session is not connected' });
+  }
+
+  const { tabId } = req.params;
+  const requestId = uuidv4().substring(0, 8);
+
+  const pendingRequest = {
     requestId,
-    message: 'Update tab command sent to browser',
+    sessionId: session.sessionId,
+    timestamp: Date.now(),
+    completed: false
+  };
+
+  wssPendingRequests.set(requestId, pendingRequest);
+
+  const message = {
+    type: 'tabs.reload',
+    requestId,
+    sessionId: session.sessionId,
+    data: { tabId },
+    from: 'server',
     timestamp: Date.now()
-  });
+  };
+
+  session.ws.send(JSON.stringify(message));
+
+  try {
+    const result = await waitForResponse(requestId, 10000);
+    res.json({
+      success: true,
+      sessionId: session.sessionId,
+      requestId,
+      result,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    wssPendingRequests.delete(requestId);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: Date.now()
+    });
+  }
+});
+
+app.post('/api/browser/:sessionId/tabs/:tabId/back', async (req, res) => {
+  const session = wssSessions.get(req.params.sessionId);
+
+  if (!session) {
+    return res.status(404).json({ error: 'Session not found' });
+  }
+
+  if (session.ws.readyState !== WebSocket.OPEN) {
+    return res.status(503).json({ error: 'Session is not connected' });
+  }
+
+  const { tabId } = req.params;
+  const requestId = uuidv4().substring(0, 8);
+
+  const pendingRequest = {
+    requestId,
+    sessionId: session.sessionId,
+    timestamp: Date.now(),
+    completed: false
+  };
+
+  wssPendingRequests.set(requestId, pendingRequest);
+
+  const message = {
+    type: 'tabs.goBack',
+    requestId,
+    sessionId: session.sessionId,
+    data: { tabId },
+    from: 'server',
+    timestamp: Date.now()
+  };
+
+  session.ws.send(JSON.stringify(message));
+
+  try {
+    const result = await waitForResponse(requestId, 10000);
+    res.json({
+      success: true,
+      sessionId: session.sessionId,
+      requestId,
+      result,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    wssPendingRequests.delete(requestId);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: Date.now()
+    });
+  }
+});
+
+app.post('/api/browser/:sessionId/tabs/:tabId/forward', async (req, res) => {
+  const session = wssSessions.get(req.params.sessionId);
+
+  if (!session) {
+    return res.status(404).json({ error: 'Session not found' });
+  }
+
+  if (session.ws.readyState !== WebSocket.OPEN) {
+    return res.status(503).json({ error: 'Session is not connected' });
+  }
+
+  const { tabId } = req.params;
+  const requestId = uuidv4().substring(0, 8);
+
+  const pendingRequest = {
+    requestId,
+    sessionId: session.sessionId,
+    timestamp: Date.now(),
+    completed: false
+  };
+
+  wssPendingRequests.set(requestId, pendingRequest);
+
+  const message = {
+    type: 'tabs.goForward',
+    requestId,
+    sessionId: session.sessionId,
+    data: { tabId },
+    from: 'server',
+    timestamp: Date.now()
+  };
+
+  session.ws.send(JSON.stringify(message));
+
+  try {
+    const result = await waitForResponse(requestId, 10000);
+    res.json({
+      success: true,
+      sessionId: session.sessionId,
+      requestId,
+      result,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    wssPendingRequests.delete(requestId);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: Date.now()
+    });
+  }
 });
 
 app.get('/api/websocket/sessions', (req, res) => {
@@ -275,24 +516,461 @@ app.post('/api/websocket/sessions/:sessionId/message', (req, res) => {
   }
 });
 
-app.delete('/api/websocket/sessions/:sessionId', (req, res) => {
+app.post('/api/browser/:sessionId/tabs/:tabId/execute', async (req, res) => {
   const session = wssSessions.get(req.params.sessionId);
 
   if (!session) {
     return res.status(404).json({ error: 'Session not found' });
   }
 
-  try {
-    session.ws.close();
-    wssSessions.delete(session.sessionId);
+  if (session.ws.readyState !== WebSocket.OPEN) {
+    return res.status(503).json({ error: 'Session is not connected' });
+  }
 
+  const { tabId } = req.params;
+  const { code, args } = req.body;
+  const requestId = uuidv4().substring(0, 8);
+
+  if (!code) {
+    return res.status(400).json({ error: 'code is required' });
+  }
+
+  const pendingRequest = {
+    requestId,
+    sessionId: session.sessionId,
+    timestamp: Date.now(),
+    completed: false
+  };
+
+  wssPendingRequests.set(requestId, pendingRequest);
+
+  const message = {
+    type: 'tabs.executeScript',
+    requestId,
+    sessionId: session.sessionId,
+    data: { tabId, code, args },
+    from: 'server',
+    timestamp: Date.now()
+  };
+
+  session.ws.send(JSON.stringify(message));
+
+  try {
+    const result = await waitForResponse(requestId, 30000);
     res.json({
       success: true,
       sessionId: session.sessionId,
-      message: 'Session closed successfully'
+      requestId,
+      result,
+      timestamp: Date.now()
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    wssPendingRequests.delete(requestId);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: Date.now()
+    });
+  }
+});
+
+app.post('/api/browser/:sessionId/tabs/capture', async (req, res) => {
+  const session = wssSessions.get(req.params.sessionId);
+
+  if (!session) {
+    return res.status(404).json({ error: 'Session not found' });
+  }
+
+  if (session.ws.readyState !== WebSocket.OPEN) {
+    return res.status(503).json({ error: 'Session is not connected' });
+  }
+
+  const { windowId = -2, format = 'png', quality = 90 } = req.body || {};
+  const requestId = uuidv4().substring(0, 8);
+
+  const message = {
+    type: 'tabs.captureVisibleTab',
+    requestId,
+    sessionId: session.sessionId,
+    data: { windowId, format, quality },
+    from: 'server',
+    timestamp: Date.now()
+  };
+
+  const pendingRequest = {
+    requestId,
+    sessionId: session.sessionId,
+    timestamp: Date.now(),
+    completed: false
+  };
+
+  wssPendingRequests.set(requestId, pendingRequest);
+  session.ws.send(JSON.stringify(message));
+
+  const timeout = 10000;
+  const checkInterval = 100;
+  const startTime = Date.now();
+
+  const waitForResponse = () => {
+    return new Promise((resolve, reject) => {
+      const interval = setInterval(() => {
+        if (Date.now() - startTime > timeout) {
+          clearInterval(interval);
+          reject(new Error('Capture timeout'));
+        }
+
+        const request = wssPendingRequests.get(requestId);
+        if (request && request.completed) {
+          clearInterval(interval);
+          wssPendingRequests.delete(requestId);
+          if (request.response && request.response.success) {
+            resolve(request.response);
+          } else {
+            reject(request.response?.error || new Error('Capture failed'));
+          }
+        }
+      }, checkInterval);
+    });
+  };
+
+  try {
+    const response = await waitForResponse();
+    res.json({
+      success: true,
+      sessionId: session.sessionId,
+      requestId,
+      filePath: response.result.filePath,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    wssPendingRequests.delete(requestId);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: Date.now()
+    });
+  }
+});
+
+app.post('/api/browser/:sessionId/tabs/:tabId/click', async (req, res) => {
+  const session = wssSessions.get(req.params.sessionId);
+
+  if (!session) {
+    return res.status(404).json({ error: 'Session not found' });
+  }
+
+  if (session.ws.readyState !== WebSocket.OPEN) {
+    return res.status(503).json({ error: 'Session is not connected' });
+  }
+
+  const { tabId } = req.params;
+  const { selector } = req.body;
+
+  if (!selector) {
+    return res.status(400).json({ error: 'selector is required' });
+  }
+
+  const requestId = uuidv4().substring(0, 8);
+
+  const pendingRequest = {
+    requestId,
+    sessionId: session.sessionId,
+    timestamp: Date.now(),
+    completed: false
+  };
+
+  wssPendingRequests.set(requestId, pendingRequest);
+
+  const message = {
+    type: 'tabs.click',
+    requestId,
+    sessionId: session.sessionId,
+    data: { tabId, selector },
+    from: 'server',
+    timestamp: Date.now()
+  };
+
+  session.ws.send(JSON.stringify(message));
+
+  try {
+    const result = await waitForResponse(requestId, 10000);
+    res.json({
+      success: true,
+      sessionId: session.sessionId,
+      requestId,
+      result,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    wssPendingRequests.delete(requestId);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: Date.now()
+    });
+  }
+});
+
+app.post('/api/browser/:sessionId/tabs/:tabId/type', async (req, res) => {
+  const session = wssSessions.get(req.params.sessionId);
+
+  if (!session) {
+    return res.status(404).json({ error: 'Session not found' });
+  }
+
+  if (session.ws.readyState !== WebSocket.OPEN) {
+    return res.status(503).json({ error: 'Session is not connected' });
+  }
+
+  const { tabId } = req.params;
+  const { selector, text, delay = 50 } = req.body;
+
+  if (!selector) {
+    return res.status(400).json({ error: 'selector is required' });
+  }
+  if (text === undefined) {
+    return res.status(400).json({ error: 'text is required' });
+  }
+
+  const requestId = uuidv4().substring(0, 8);
+
+  const pendingRequest = {
+    requestId,
+    sessionId: session.sessionId,
+    timestamp: Date.now(),
+    completed: false
+  };
+
+  wssPendingRequests.set(requestId, pendingRequest);
+
+  const message = {
+    type: 'tabs.type',
+    requestId,
+    sessionId: session.sessionId,
+    data: { tabId, selector, text, delay },
+    from: 'server',
+    timestamp: Date.now()
+  };
+
+  session.ws.send(JSON.stringify(message));
+
+  try {
+    const result = await waitForResponse(requestId, 10000);
+    res.json({
+      success: true,
+      sessionId: session.sessionId,
+      requestId,
+      result,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    wssPendingRequests.delete(requestId);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: Date.now()
+    });
+  }
+});
+
+app.post('/api/browser/:sessionId/tabs/:tabId/fill', async (req, res) => {
+  const session = wssSessions.get(req.params.sessionId);
+
+  if (!session) {
+    return res.status(404).json({ error: 'Session not found' });
+  }
+
+  if (session.ws.readyState !== WebSocket.OPEN) {
+    return res.status(503).json({ error: 'Session is not connected' });
+  }
+
+  const { tabId } = req.params;
+  const { selector, text } = req.body;
+
+  if (!selector) {
+    return res.status(400).json({ error: 'selector is required' });
+  }
+  if (text === undefined) {
+    return res.status(400).json({ error: 'text is required' });
+  }
+
+  const requestId = uuidv4().substring(0, 8);
+
+  const pendingRequest = {
+    requestId,
+    sessionId: session.sessionId,
+    timestamp: Date.now(),
+    completed: false
+  };
+
+  wssPendingRequests.set(requestId, pendingRequest);
+
+  const message = {
+    type: 'tabs.fill',
+    requestId,
+    sessionId: session.sessionId,
+    data: { tabId, selector, text },
+    from: 'server',
+    timestamp: Date.now()
+  };
+
+  session.ws.send(JSON.stringify(message));
+
+  try {
+    const result = await waitForResponse(requestId, 10000);
+    res.json({
+      success: true,
+      sessionId: session.sessionId,
+      requestId,
+      result,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    wssPendingRequests.delete(requestId);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: Date.now()
+    });
+  }
+});
+
+app.post('/api/browser/:sessionId/tabs/:tabId/scrape', async (req, res) => {
+  const session = wssSessions.get(req.params.sessionId);
+
+  if (!session) {
+    return res.status(404).json({ error: 'Session not found' });
+  }
+
+  if (session.ws.readyState !== WebSocket.OPEN) {
+    return res.status(503).json({ error: 'Session is not connected' });
+  }
+
+  const { tabId } = req.params;
+  const { selector, fields } = req.body;
+
+  if (!selector) {
+    return res.status(400).json({ error: 'selector is required' });
+  }
+
+  const requestId = uuidv4().substring(0, 8);
+
+  const message = {
+    type: 'tabs.scrape',
+    requestId,
+    sessionId: session.sessionId,
+    data: { tabId, selector, fields },
+    from: 'server',
+    timestamp: Date.now()
+  };
+
+  const pendingRequest = {
+    requestId,
+    sessionId: session.sessionId,
+    timestamp: Date.now(),
+    completed: false
+  };
+
+  wssPendingRequests.set(requestId, pendingRequest);
+  session.ws.send(JSON.stringify(message));
+
+  const timeout = 30000;
+  const checkInterval = 100;
+  const startTime = Date.now();
+
+  const waitForResponse = () => {
+    return new Promise((resolve, reject) => {
+      const interval = setInterval(() => {
+        if (Date.now() - startTime > timeout) {
+          clearInterval(interval);
+          reject(new Error('Scrape timeout'));
+        }
+
+        const request = wssPendingRequests.get(requestId);
+        if (request && request.completed) {
+          clearInterval(interval);
+          wssPendingRequests.delete(requestId);
+          if (request.response && request.response.success) {
+            resolve(request.response);
+          } else {
+            reject(request.response?.error || new Error('Scrape failed'));
+          }
+        }
+      }, checkInterval);
+    });
+  };
+
+  try {
+    const response = await waitForResponse();
+    res.json({
+      success: true,
+      sessionId: session.sessionId,
+      requestId,
+      result: response.result,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    wssPendingRequests.delete(requestId);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: Date.now()
+    });
+  }
+});
+
+app.post('/api/browser/:sessionId/tabs/:tabId/scroll', async (req, res) => {
+  const session = wssSessions.get(req.params.sessionId);
+
+  if (!session) {
+    return res.status(404).json({ error: 'Session not found' });
+  }
+
+  if (session.ws.readyState !== WebSocket.OPEN) {
+    return res.status(503).json({ error: 'Session is not connected' });
+  }
+
+  const { tabId } = req.params;
+  const { direction = 'down', amount = 500 } = req.body;
+
+  const requestId = uuidv4().substring(0, 8);
+
+  const pendingRequest = {
+    requestId,
+    sessionId: session.sessionId,
+    timestamp: Date.now(),
+    completed: false
+  };
+
+  wssPendingRequests.set(requestId, pendingRequest);
+
+  const message = {
+    type: 'tabs.scroll',
+    requestId,
+    sessionId: session.sessionId,
+    data: { tabId, direction, amount },
+    from: 'server',
+    timestamp: Date.now()
+  };
+
+  session.ws.send(JSON.stringify(message));
+
+  try {
+    const result = await waitForResponse(requestId, 10000);
+    res.json({
+      success: true,
+      sessionId: session.sessionId,
+      requestId,
+      result,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    wssPendingRequests.delete(requestId);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: Date.now()
+    });
   }
 });
 
@@ -345,7 +1023,7 @@ wss.on('connection', (ws, req) => {
     
     try {
       const data = JSON.parse(message.toString());
-      
+
       if (data.type === 'ping') {
         ws.send(JSON.stringify({
           type: 'pong',
@@ -358,6 +1036,43 @@ wss.on('connection', (ws, req) => {
           sessionId,
           timestamp: Date.now()
         }));
+      } else if (data.type === 'tabs.captureVisibleTab.response' && data.requestId) {
+        const pendingRequest = wssPendingRequests.get(data.requestId);
+        if (pendingRequest && data.success && data.result && data.result.dataUrl) {
+          try {
+            ensureMediaDir();
+            const mediaDir = getMediaDir();
+            const format = data.result.format || 'png';
+            const filename = generateFilename('screenshot', format);
+            const filePath = path.join(mediaDir, filename);
+            const base64Data = data.result.dataUrl.replace(/^data:image\/\w+;base64,/, '');
+            fs.writeFileSync(filePath, base64Data, 'base64');
+            console.log(`[WS] [${sessionId}] Screenshot saved to ${filePath}`);
+            pendingRequest.response = {
+              success: true,
+              result: {
+                filePath: filePath
+              },
+              timestamp: Date.now()
+            };
+          } catch (error) {
+            console.error(`[WS] [${sessionId}] Error saving screenshot:`, error.message);
+            pendingRequest.response = {
+              success: false,
+              error: error.message,
+              timestamp: Date.now()
+            };
+          }
+        } else {
+          pendingRequest.response = {
+            success: data.success,
+            result: data.result,
+            error: data.error,
+            timestamp: Date.now()
+          };
+        }
+        pendingRequest.completed = true;
+        console.log(`[WS] [${sessionId}] Request ${data.requestId} completed`);
       } else if (data.requestId && wssPendingRequests.has(data.requestId)) {
         const pendingRequest = wssPendingRequests.get(data.requestId);
         pendingRequest.response = {
