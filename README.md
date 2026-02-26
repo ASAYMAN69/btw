@@ -6,9 +6,14 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![Playwright](https://img.shields.io/badge/Playwright-1.58+-green.svg)](https://playwright.dev/)
 
-> **BTW**: Browse The Web - AI Browser Automation API with HTTP REST Endpoints for Headless Chrome Control
+> **BTW**: Browse The Web - AI Browser Automation API with **Dual Browser Control Systems**
 
-An AI-powered browser automation API that gives AI agents, applications, and developers full control over a Chromium browser through simple HTTP endpoints. Perfect for web scraping, automated testing, RPA, and AI-driven workflows.
+An AI-powered browser automation API that gives AI agents, applications, and developers full control over browsers through simple HTTP endpoints. 
+
+**✅ System 1: Playwright Controlled** (`/api/browser`, `/api/tabs`) - Headless browser automation
+**✅ System 2: Chrome Extension Controlled** (`/api/browser/:sessionId/tabs/*`) - Real browser control
+
+Perfect for web scraping, automated testing, RPA, and AI-driven workflows.
 
 ## 🚀 Quick Start
 
@@ -27,6 +32,8 @@ npm start
 
 ## 📚 Example Usage
 
+### System 1: Playwright Controlled (Headless Browser)
+
 ```bash
 # Launch browser
 curl -X POST http://localhost:5409/api/browser/launch
@@ -35,23 +42,61 @@ curl -X POST http://localhost:5409/api/browser/launch
 curl -X POST http://localhost:5409/api/tabs/create
 
 # Navigate to a website
-curl -X POST http://localhost:5409/api/tabs/{tabId}/goto \
+curl -X POST http://localhost:5409/api/tabs/{sessionId}/goto \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com"}'
 
 # Extract data
-curl -X POST http://localhost:5409/api/tabs/{tabId}/evaluate \
-  -H "Content-Type: application.json" \
+curl -X POST http://localhost:5409/api/tabs/{sessionId}/evaluate \
+  -H "Content-Type: application/json" \
   -d '{"script":"document.title"}'
 
 # Close browser
 curl -X POST http://localhost:5409/api/browser/close
 ```
 
+### System 2: Chrome Extension Controlled (Real Browser)
+
+```bash
+# Install BTW Chrome extension (load: dist/btw-chrome-extension/)
+
+# Get connected session ID
+curl http://localhost:5409/api/websocket/sessions
+
+# Create tab in real browser
+curl -X POST http://localhost:5409/api/browser/{sessionId}/tabs/create \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://example.com"}'
+
+# Click element
+curl -X POST http://localhost:5409/api/browser/{sessionId}/tabs/{tabId}/click \
+  -H "Content-Type: application/json" \
+  -d '{"selector":"#button"}'
+
+# Take screenshot
+curl -X POST http://localhost:5409/api/browser/{sessionId}/tabs/capture
+```
+
 ## ✨ Features
 
+### Dual Browser Control Systems
+
+- **🎭 Playwright System**: Headless browser automation with complete programmatic control
+  - No browser installation needed
+  - Full access to all browser APIs
+  - Perfect for scraping and testing
+  - Docs: `API_BLUEPRINT.md`
+
+- **🌐 Chrome Extension System**: Control real Chrome browser via WebSocket
+  - Real browser context with all extensions
+  - User's cookies and authentication preserved
+  - Ideal for human-in-the-loop workflows
+  - Docs: `CHROME_EXTENSION_API.md`
+
+### Core Features
+
 - **🧠 AI-Ready**: Perfect for AI agents and LLMs to control browsers programmatically
-- **🎯 70+ Endpoints**: Full browser automation capabilities via REST API
+- **🎯 100+ Endpoints**: Full browser automation across both systems
 - **📄 Web Scraping**: Extract text, images, forms, and structured data from any website
 - **🔍 Network Monitoring**: Intercept, mock, and analyze network traffic for debugging
 - **🖼️ Screenshots & PDF**: Capture full-page screenshots and export pages as PDF
@@ -60,6 +105,7 @@ curl -X POST http://localhost:5409/api/browser/close
 - **🔌 REST API**: Simple HTTP endpoints with JSON responses - easy to integrate
 - **🛡️ Isolated Contexts**: Each tab runs in isolated browser context (separate cookies, storage)
 - **📝 TypeScript**: Fully typed codebase with excellent IDE support and type safety
+- **🐛 Serverless Debugging**: All errors and debugging info in HTTP responses - no server logs needed!
 
 ## 💡 Use Cases
 
@@ -85,25 +131,57 @@ curl -X POST http://localhost:5409/api/browser/close
 
 ## 📖 Documentation
 
-- **[AI_AGENT_GUIDE.md](AI_AGENT_GUIDE.md)** - Comprehensive guide for AI models and agents. **Start here** if you're an AI model or building AI-driven workflows.
-- **[API_BLUEPRINT.md](API_BLUEPRINT.md)** - Complete technical API reference with 70+ endpoints and detailed specifications.
+### For AI Agents
+- **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - **Start here!** Quick cheat sheet for AI models with common operations and endpoints
+- **[CHROME_EXTENSION_API.md](CHROME_EXTENSION_API.md)** - Complete guide for Chrome Extension WebSocket API system
+- **[API_BLUEPRINT.md](API_BLUEPRINT.md)** - Complete technical API reference for Playwright system (80+ endpoints)
+
+### For Debugging
+- **[DEBUGGING_GUIDE.md](DEBUGGING_GUIDE.md)** - Comprehensive debugging guide - **NO server logs needed!** All errors in responses
+
+### System Overview
+
+| System | Base URL | Use Case | Docs |
+|--------|----------|----------|------|
+| **Playwright** | `/api/browser`, `/api/tabs` | Headless automation, scraping, testing | `API_BLUEPRINT.md` |
+| **Chrome Extension** | `/api/browser/:sessionId/tabs/*` | Real browser control, human workflows | `CHROME_EXTENSION_API.md` |
+
+### Choosing Your System
+
+- **Use Playwright System** when:
+  - You need headless mode
+  - You don't want to install Chrome
+  - You're scraping many pages
+  - You need full programmatic control
+
+- **Use Chrome Extension System** when:
+  - You need real browser extensions
+  - You need user's authentication/cookies
+  - You're doing human-in-the-loop workflows
+  - You need to debug in real browser
 
 ## 🗂️ Project Structure
 
 ```
 btw/
-├── app.js                      # Main server entry point
-├── package.json                # Dependencies
-├── API_BLUEPRINT.md           # Complete API documentation
-├── README.md                  # This file
-├── controllers/               # Request handlers
+├── Documentation/
+│   ├── API_BLUEPRINT.md           # Playwright system API (80+ endpoints)
+│   ├── CHROME_EXTENSION_API.md    # Chrome Extension WebSocket API
+│   ├── DEBUGGING_GUIDE.md         # Debugging without server logs
+│   └── QUICK_REFERENCE.md         # Quick cheat sheet for AI agents
+├── Extension/
+│   └── dist/btw-chrome-extension/ # Chrome extension (auto-connected)
+├── app.js                         # Main server entry point
+├── package.json                   # Dependencies
+├── README.md                      # This file
+├── controllers/                   # Request handlers
 │   ├── browserController.js
 │   └── tabsController.js
-├── managers/                  # Business logic
-│   ├── BrowserManager.js      # Browser lifecycle
-│   ├── TabManager.js          # Tab management
+├── managers/                      # Business logic
+│   ├── BrowserManager.js          # Browser lifecycle
+│   ├── TabManager.js              # Tab management
 │   └── index.js
-└── routes/                    # API routes
+└── routes/                        # API routes
     ├── browser.js
     └── tabs.js
 ```

@@ -302,7 +302,7 @@ class TabsController {
   async screenshot(req, res) {
     try {
       const { tabId } = req.params;
-      const { type = 'png', fullPage = false, quality = 80 } = req.body;
+      const { type = 'png', fullPage = false, quality = 80 } = req.body || {};
 
       const tab = tabManager.getTab(tabId);
 
@@ -322,7 +322,7 @@ class TabsController {
   async pdf(req, res) {
     try {
       const { tabId } = req.params;
-      const { format = 'A4', printBackground = true } = req.body;
+      const { format = 'A4', printBackground = true } = req.body || {};
 
       const tab = tabManager.getTab(tabId);
 
@@ -647,7 +647,7 @@ class TabsController {
   async waitForLoad(req, res) {
     try {
       const { tabId } = req.params;
-      const { timeout = 30000 } = req.body;
+      const { timeout = 30000 } = req.body || {};
 
       const tab = tabManager.getTab(tabId);
 
@@ -665,7 +665,7 @@ class TabsController {
   async waitForNavigation(req, res) {
     try {
       const { tabId } = req.params;
-      const { url, waitUntil = 'load', timeout = 30000 } = req.body;
+      const { url, waitUntil = 'load', timeout = 30000 } = req.body || {};
 
       const tab = tabManager.getTab(tabId);
       const options = { waitUntil, timeout };
@@ -701,7 +701,7 @@ class TabsController {
   async waitForNetworkIdle(req, res) {
     try {
       const { tabId } = req.params;
-      const { timeout = 30000 } = req.body;
+      const { timeout = 30000 } = req.body || {};
 
       const tab = tabManager.getTab(tabId);
       await tab.page.waitForLoadState('networkidle', { timeout });
@@ -793,7 +793,7 @@ class TabsController {
   async dialogAccept(req, res) {
     try {
       const { tabId } = req.params;
-      const { promptText = '' } = req.body;
+      const { promptText = '' } = req.body || {};
 
       const tab = tabManager.getTab(tabId);
       
@@ -984,7 +984,7 @@ class TabsController {
   async mouseDown(req, res) {
     try {
       const { tabId } = req.params;
-      const { button = 'left', clickCount = 1 } = req.body;
+      const { button = 'left', clickCount = 1 } = req.body || {};
 
       const tab = tabManager.getTab(tabId);
       await tab.page.mouse.down({ button, clickCount });
@@ -998,7 +998,7 @@ class TabsController {
   async mouseUp(req, res) {
     try {
       const { tabId } = req.params;
-      const { button = 'left', clickCount = 1 } = req.body;
+      const { button = 'left', clickCount = 1 } = req.body || {};
 
       const tab = tabManager.getTab(tabId);
       await tab.page.mouse.up({ button, clickCount });
@@ -1012,7 +1012,7 @@ class TabsController {
   async mouseWheel(req, res) {
     try {
       const { tabId } = req.params;
-      const { deltaX = 0, deltaY = 0 } = req.body;
+      const { deltaX = 0, deltaY = 0 } = req.body || {};
 
       const tab = tabManager.getTab(tabId);
       await tab.page.mouse.wheel(deltaX, deltaY);
@@ -1224,7 +1224,7 @@ class TabsController {
   async networkIntercept(req, res) {
     try {
       const { tabId } = req.params;
-      const { enabled = true, patterns = ['**/*'] } = req.body;
+      const { enabled = true, patterns = ['**/*'] } = req.body || {};
       const tab = tabManager.getTab(tabId);
 
       tab.interceptedPatterns = patterns;

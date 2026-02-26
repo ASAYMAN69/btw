@@ -3,8 +3,8 @@ const { chromium } = require('playwright');
 class BrowserManager {
   constructor() {
     this.browser = null;
-    this.launchOptions = {
-      headless: 'new',
+          this.launchOptions = {
+          headless: false,
       devtools: false,
       slowMo: 0,
       args: [
@@ -72,11 +72,21 @@ class BrowserManager {
       launched: isLaunched,
       contexts: isLaunched ? this.browser.contexts().map(c => ({
         id: c._id || 'unknown',
-        pages: c.pages().map(p => ({
-          id: p._guid || 'unknown',
-          url: p.url(),
-          title: p.title()
-        }))
+        pages: c.pages().map(p => {
+          try {
+            return {
+              id: p._guid || 'unknown',
+              url: p.url() || '',
+              title: p.title() || ''
+            };
+          } catch (e) {
+            return {
+              id: p._guid || 'unknown',
+              url: '',
+              title: ''
+            };
+          }
+        })
       })) : [],
       version: chromium.version ? chromium.version() : 'unknown'
     };

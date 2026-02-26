@@ -3,11 +3,12 @@ const { browserManager } = require('../managers');
 class BrowserController {
   async launch(req, res) {
     try {
+      const body = req.body || {};
       const options = {
-        headless: req.body.headless !== undefined ? req.body.headless : false,
-        devtools: req.body.devtools || false,
-        slowMo: req.body.slowMo || 0,
-        args: req.body.args || []
+        headless: body.headless !== undefined ? body.headless : false,
+        devtools: body.devtools || false,
+        slowMo: body.slowMo || 0,
+        args: body.args || []
       };
 
       const result = await browserManager.launch(options);
