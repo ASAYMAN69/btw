@@ -24,16 +24,29 @@
 
 ### 1. Install & Connect
 
+**Install the Chrome Extension:**
+
 ```bash
-# Build extension
+# Step 1: Build extension
 npm run dev
 
-# Load in Chrome
-chrome://extensions → Load unpacked → dist/btw-chrome-extension/
+# Step 2: Load in Chrome
+# Open: chrome://extensions
+# Enable: Developer mode (top-right toggle)
+# Click: Load unpacked
+# Select: dist/btw-chrome-extension/
 
-# Get session ID
+# Step 3: Verify connection
+# Extension should show "Connected" indicator
+
+# Step 4: Get session ID
 curl http://localhost:5409/api/websocket/sessions
 ```
+
+**If extension won't connect:**
+1. Check server is running: `curl http://localhost:5409/api/health`
+2. Reload extension in chrome://extensions
+3. Check browser console (F12) for errors
 
 ### 2. Common Operations
 
@@ -192,6 +205,7 @@ POST /api/browser/{sessionId}/tabs/{tabId}/scrape
 
 - **Playwright API:** `API_BLUEPRINT.md`
 - **Chrome Extension API:** `CHROME_EXTENSION_API.md`
+- **Extension Installation:** `EXTENSION_INSTALLATION.md`
 - **Debugging Guide:** `DEBUGGING_GUIDE.md`
 - **This Quick Ref:** `QUICK_REFERENCE.md`
 

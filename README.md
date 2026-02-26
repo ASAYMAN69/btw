@@ -57,9 +57,22 @@ curl -X POST http://localhost:5409/api/browser/close
 
 ### System 2: Chrome Extension Controlled (Real Browser)
 
-```bash
-# Install BTW Chrome extension (load: dist/btw-chrome-extension/)
+**Step 1: Install the Extension**
 
+```bash
+# Build the extension
+npm run dev
+
+# Load in Chrome:
+# 1. Navigate to chrome://extensions
+# 2. Enable "Developer mode" (top-right toggle)
+# 3. Click "Load unpacked"
+# 4. Select: dist/btw-chrome-extension/
+```
+
+**Step 2: Use the Extension API**
+
+```bash
 # Get connected session ID
 curl http://localhost:5409/api/websocket/sessions
 
@@ -76,6 +89,8 @@ curl -X POST http://localhost:5409/api/browser/{sessionId}/tabs/{tabId}/click \
 # Take screenshot
 curl -X POST http://localhost:5409/api/browser/{sessionId}/tabs/capture
 ```
+
+**Note:** See [EXTENSION_INSTALLATION.md](EXTENSION_INSTALLATION.md) for detailed setup instructions or [CHROME_EXTENSION_API.md](CHROME_EXTENSION_API.md) for the complete API reference.
 
 ## ✨ Features
 
@@ -134,6 +149,7 @@ curl -X POST http://localhost:5409/api/browser/{sessionId}/tabs/capture
 ### For AI Agents
 - **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - **Start here!** Quick cheat sheet for AI models with common operations and endpoints
 - **[CHROME_EXTENSION_API.md](CHROME_EXTENSION_API.md)** - Complete guide for Chrome Extension WebSocket API system
+- **[EXTENSION_INSTALLATION.md](EXTENSION_INSTALLATION.md)** - Detailed Chrome extension installation and troubleshooting guide
 - **[API_BLUEPRINT.md](API_BLUEPRINT.md)** - Complete technical API reference for Playwright system (80+ endpoints)
 
 ### For Debugging

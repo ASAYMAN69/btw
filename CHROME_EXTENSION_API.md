@@ -100,17 +100,74 @@ The Chrome Extension system controls real browser tabs through a WebSocket conne
 ### Prerequisites
 
 1. **Install Chrome Extension**
-   - Build: `npm run dev` (generates extension in `dist/btw-chrome-extension/`)
-   - Load in Chrome: `chrome://extensions` → Developer mode → Load unpacked
-   - Select directory: `dist/btw-chrome-extension/`
+
+   Follow these steps to install the BTW Chrome extension:
+
+   **Step 1: Build the Extension**
+   ```bash
+   npm run dev
+   ```
+   This generates the extension in the `dist/btw-chrome-extension/` directory.
+
+   **Step 2: Open Chrome Extensions Page**
+   - In Chrome, navigate to: `chrome://extensions`
+   - Or use menu: ⋮ (three dots) → More Tools → Extensions
+
+   **Step 3: Enable Developer Mode**
+   - Toggle the "Developer mode" switch in the top-right corner
+   - Extension tools will appear (Load unpacked, Pack extension, Update)
+
+   **Step 4: Load the Extension**
+   - Click the "Load unpacked" button
+   - Navigate to your BTW project directory
+   - Select: `dist/btw-chrome-extension/`
+   - Click "Select Folder"
+
+   **Step 5: Verify Installation**
+   - BTW extension should appear in your extensions list
+   - You should see a green "Connected" indicator (if server is running)
+   - Extension icon may appear in Chrome toolbar
 
 2. **Extension Auto-Connects**
    - Extension automatically connects to: `ws://localhost:5409/ws`
-   - Receives a unique `sessionId` (format: `ext_XXXXXXXXXXXX`)
+   - You'll see a connection indicator in the extension popup
+   - Extension receives a unique `sessionId` (format: `ext_XXXXXXXXXXXX`)
 
 3. **No Server Browsers**
    - Extension system does NOT launch Playwright browsers
    - All browsers are the user's real Chrome instances
+   - Your real Chrome tabs are controlled via WebSocket
+
+4. **Server Must Be Running**
+   ```bash
+   # Start BTW server
+   npm start
+   # or
+   npm run dev
+
+   # Verify server is running
+   curl http://localhost:5409/api/health
+   ```
+
+### Troubleshooting Installation
+
+**Extension Not Connecting:**
+1. Check server is running: `curl http://localhost:5409/api/health`
+2. Reload the extension: chrome://extensions → click reload button on BTW extension
+3. Check WebSocket connection: Look for "Connected" indicator in extension
+4. Check browser console for errors (F12 → Console tab)
+
+**Extension Won't Load:**
+1. Make sure you ran `npm run dev` to build the extension
+2. Check directory: `dist/btw-chrome-extension/` must exist
+3. Look for error messages in chrome://extensions
+4. Try restarting Chrome
+
+**Can't Find BTW Extension:**
+1. Navigate to chrome://extensions
+2. Scroll through the list - BTW should be visible
+3. Use search bar at top-right to find "BTW" or "Browse The Web"
+4. Check if extension was disabled (toggle switch should be right/on)
 
 ---
 
