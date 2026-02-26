@@ -1,6 +1,6 @@
 {
   "name": "browse-the-web",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "AI Browser Automation API - Control Headless Chrome via RESTful HTTP endpoints. Perfect for web scraping, RPA, automated testing, and AI agent integration with 70+ endpoints including screenshots, PDF generation, network monitoring, and more.",
   "main": "dist/index.js",
   "scripts": {
